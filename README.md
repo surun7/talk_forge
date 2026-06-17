@@ -4,7 +4,7 @@ A **pluggable AI-powered resume builder framework** with real-time A4 preview an
 
 <img width="2558" height="1293" alt="屏幕截图 2026-06-17 232311" src="https://github.com/user-attachments/assets/b5219721-3615-4b06-b84b-26db1aee8b3c" />
 
-<img width="677" height="966" alt="屏幕截图 2026-06-17 232417" src="https://github.com/user-attachments/assets/45680329-833c-419f-8020-96b171c2d7f7" />
+<img width="2558" height="1286" alt="屏幕截图 2026-06-17 234229" src="https://github.com/user-attachments/assets/cbccd0f8-b1a2-4f1d-9d71-5a81b2b96df8" />
 
 ## Tech Stack
 
