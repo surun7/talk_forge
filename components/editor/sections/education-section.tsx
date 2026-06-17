@@ -1,0 +1,41 @@
+"use client";
+import React from "react";
+import type { Resume } from "@/lib/resume-schema";
+import { nextId } from "@/lib/resume-schema";
+import { Plus } from "lucide-react";
+import { AnimatedSection, SectionHeader, Field, CollapsibleItem, FormattedField, inputCls, btnCls } from "../shared";
+
+interface Props {
+  resume: Resume; onChange: (r: Resume) => void; openSections: Record<string, boolean>;
+  toggle: (k: string) => void; visible: (k: string) => boolean; togVis: (k: string) => void;
+  sectionTitle: (k: string, f: string) => string; sectionIconEl: (k: string, f: string) => React.ReactNode;
+  sLabel: (k: string, v: string) => void;
+  onMoveUp?: () => void; onMoveDown?: () => void; isFirst?: boolean; isLast?: boolean;
+}
+
+export default function EducationSection({ resume, onChange, openSections, toggle, visible, togVis, sectionTitle, sectionIconEl, sLabel, onMoveUp, onMoveDown, isFirst, isLast }: Props) {
+  return (<>
+    <SectionHeader title={sectionTitle("education", "EDUCATION")} count={resume.education.length} icon={sectionIconEl("education", "graduation-cap")} open={!!openSections.education} onToggle={() => toggle("education")}
+      visible={visible("education")} onToggleVisibility={() => togVis("education")} sectionKey="education" onTitleChange={sLabel}
+      onMoveUp={onMoveUp} onMoveDown={onMoveDown} isFirst={isFirst} isLast={isLast} />
+    <AnimatedSection open={!!openSections.education}>
+      <div className="px-2 pb-3 space-y-1">
+        {resume.education.map(edu => (
+          <CollapsibleItem key={edu.id} title={edu.school || "New Education"} subtitle={edu.degree} open={!!openSections[edu.id]} onToggle={() => toggle(edu.id)} onDelete={() => onChange({ ...resume, education: resume.education.filter(x => x.id !== edu.id) })}>
+            <Field label="School"><input className={inputCls} value={edu.school} onChange={e => onChange({ ...resume, education: resume.education.map(x => x.id === edu.id ? { ...x, school: e.target.value } : x) })} /></Field>
+            <div className="flex gap-2">
+              <div className="flex-1"><Field label="Degree"><input className={inputCls} value={edu.degree} onChange={e => onChange({ ...resume, education: resume.education.map(x => x.id === edu.id ? { ...x, degree: e.target.value } : x) })} /></Field></div>
+              <div className="flex-1"><Field label="Field"><input className={inputCls} value={edu.field} onChange={e => onChange({ ...resume, education: resume.education.map(x => x.id === edu.id ? { ...x, field: e.target.value } : x) })} /></Field></div>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1"><Field label="Start Date"><input className={inputCls} value={edu.startDate} onChange={e => onChange({ ...resume, education: resume.education.map(x => x.id === edu.id ? { ...x, startDate: e.target.value } : x) })} /></Field></div>
+              <div className="flex-1"><Field label="End Date"><input className={inputCls} value={edu.endDate} onChange={e => onChange({ ...resume, education: resume.education.map(x => x.id === edu.id ? { ...x, endDate: e.target.value } : x) })} placeholder="Present" /></Field></div>
+            </div>
+            <FormattedField label="Description" value={edu.description} onChange={v => onChange({ ...resume, education: resume.education.map(x => x.id === edu.id ? { ...x, description: v } : x) })} />
+          </CollapsibleItem>
+        ))}
+        <button onClick={() => onChange({ ...resume, education: [...resume.education, { id: nextId(), school: "", degree: "", field: "", startDate: "", endDate: "", description: "" }] })} className={btnCls}><Plus className="w-3 h-3" />Add Education</button>
+      </div>
+    </AnimatedSection>
+  </>);
+}
