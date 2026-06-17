@@ -3,9 +3,11 @@
 A **pluggable AI-powered resume builder framework** with real-time A4 preview and pixel-perfect PDF export. Connect any OpenAI-compatible model (Kimi, GPT, Claude, DeepSeek, Ollama, etc.) or use it entirely offline as a standalone resume editor.
 
 Agent Mode:
+
 <img width="2558" height="1293" alt="屏幕截图 2026-06-17 232311" src="https://github.com/user-attachments/assets/b5219721-3615-4b06-b84b-26db1aee8b3c" />
 
 Manual Mode:
+
 <img width="2558" height="1286" alt="屏幕截图 2026-06-17 234229" src="https://github.com/user-attachments/assets/cbccd0f8-b1a2-4f1d-9d71-5a81b2b96df8" />
 
 ## Tech Stack
