@@ -2,9 +2,6 @@
 
 A **pluggable AI-powered resume builder framework** with real-time A4 preview and pixel-perfect PDF export. Connect any OpenAI-compatible model (Kimi, GPT, Claude, DeepSeek, Ollama, etc.) or use it entirely offline as a standalone resume editor.
 
-![Editor Interface](docs/screenshot-editor.png)
-![PDF Export](docs/screenshot-pdf.png)
-
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
