@@ -254,7 +254,7 @@ function ResumeContent({
             {experience.map((exp) => (
               <div
                 key={exp.id}
-                className="pb-3 mb-3 pl-3 border-l-2 a-border border-b border-slate-100 dark:shadow-[0_0_0_1px_#334155]/30"
+                className="pb-3 mb-3 pl-3 border-l-2 a-border border-b border-slate-100"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -319,7 +319,7 @@ function ResumeContent({
             {education.map((edu) => (
               <div
                 key={edu.id}
-                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100 dark:shadow-[0_0_0_1px_#334155]/30"
+                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -387,7 +387,7 @@ function ResumeContent({
             {projects.map((proj) => (
               <div
                 key={proj.id}
-                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100 dark:shadow-[0_0_0_1px_#334155]/30"
+                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -448,7 +448,7 @@ function ResumeContent({
             {certificates.map((cert) => (
               <div
                 key={cert.id}
-                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100 dark:shadow-[0_0_0_1px_#334155]/30"
+                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -494,7 +494,7 @@ function ResumeContent({
             {publications.map((pub) => (
               <div
                 key={pub.id}
-                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100 dark:shadow-[0_0_0_1px_#334155]/30"
+                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -554,7 +554,7 @@ function ResumeContent({
             {honors.map((h) => (
               <div
                 key={h.id}
-                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100 dark:shadow-[0_0_0_1px_#334155]/30"
+                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -611,7 +611,7 @@ function ResumeContent({
             {volunteers.map((v) => (
               <div
                 key={v.id}
-                className="pb-3 mb-3 pl-3 border-l-2 a-border border-b border-slate-100 dark:shadow-[0_0_0_1px_#334155]/30"
+                className="pb-3 mb-3 pl-3 border-l-2 a-border border-b border-slate-100"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">

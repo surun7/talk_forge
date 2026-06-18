@@ -2,25 +2,17 @@
 import React, { useState } from "react";
 import type { Resume } from "@/lib/resume-schema";
 import { nextId } from "@/lib/resume-schema";
-import { Plus, Star, User, FileText, Briefcase, GraduationCap, Wrench, FolderGit2, Award, BookOpen, Languages, Heart, HeartHandshake } from "lucide-react";
-import { SectionHeader, AnimatedSection, btnCls } from "./shared";
+import { Plus, Star, Trash2 } from "lucide-react";
+import { SectionHeader, AnimatedSection, btnCls, inputCls, ICON_MAP } from "./shared";
 import { sectionComponents } from "./section-render-map";
-
-const ICON_MAP: Record<string, React.ReactNode> = {
-  user: <User className="w-3.5 h-3.5" />, briefcase: <Briefcase className="w-3.5 h-3.5" />,
-  "graduation-cap": <GraduationCap className="w-3.5 h-3.5" />, wrench: <Wrench className="w-3.5 h-3.5" />,
-  "folder-git": <FolderGit2 className="w-3.5 h-3.5" />, award: <Award className="w-3.5 h-3.5" />,
-  "book-open": <BookOpen className="w-3.5 h-3.5" />, languages: <Languages className="w-3.5 h-3.5" />,
-  star: <Star className="w-3.5 h-3.5" />, heart: <Heart className="w-3.5 h-3.5" />,
-  "heart-handshake": <HeartHandshake className="w-3.5 h-3.5" />, "file-text": <FileText className="w-3.5 h-3.5" />,
-};
 
 interface Props {
   resume: Resume; onChange: (r: Resume) => void; onOpenPhotoModal: () => void;
   sectionOrder: string[]; onMoveSectionUp: (k: string) => void; onMoveSectionDown: (k: string) => void;
+  onAddCustomSection: (id: string) => void;
 }
 
-export default function ManualEditor({ resume, onChange, onOpenPhotoModal, sectionOrder, onMoveSectionUp, onMoveSectionDown }: Props) {
+export default function ManualEditor({ resume, onChange, onOpenPhotoModal, sectionOrder, onMoveSectionUp, onMoveSectionDown, onAddCustomSection }: Props) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   const toggle = (k: string) => setOpenSections(s => ({ ...s, [k]: !s[k] }));
@@ -39,31 +31,58 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
     const ic = (resume.basics.sectionIcons || {}) as Record<string, string>;
     onChange({ ...resume, basics: { ...resume.basics, sectionIcons: { ...ic, [k]: v } } });
   };
-  const sIconEl = (k: string, f: string) => ICON_MAP[sIcon(k, f)] || ICON_MAP[f];
+  const sIconEl = (k: string, f: string) => ICON_MAP[sIcon(k, f) as string] || ICON_MAP[f];
   const upBasic = (f: string, v: string) => onChange({ ...resume, basics: { ...resume.basics, [f]: v } });
   const addL = (k: keyof Resume, item: any) => onChange({ ...resume, [k]: [...(resume[k] as any[]), item] } as Resume);
 
-  const commonProps = { resume, onChange, openSections, toggle, visible, togVis, sectionTitle: sTitle, sectionIconEl: sIconEl, sLabel, upBasic };
+  function moveCsItem(idx: number, dir: number) {
+    const arr = [...resume.customSections];
+    const target = idx + dir;
+    if (target < 0 || target >= arr.length) return;
+    [arr[idx], arr[target]] = [arr[target], arr[idx]];
+    onChange({ ...resume, customSections: arr });
+  }
+
+  const commonProps = { resume, onChange, openSections, toggle, visible, togVis, sectionTitle: sTitle, sectionIconEl: sIconEl, sLabel, sIcon, sIconSet, upBasic };
 
   return (
     <div className="flex-1 overflow-y-auto p-3 space-y-1 bg-gradient-to-b from-white dark:from-slate-900 to-slate-50 dark:to-slate-800/20">
       {/* Basics always first, no move */}
       {React.createElement(sectionComponents.basics, { ...commonProps, onOpenPhotoModal, key: "basics" })}
-      {/* Dynamic sections */}
+      {/* Dynamic sections (including custom sections) */}
       {sectionOrder.map(key => {
         const Comp = sectionComponents[key];
-        if (!Comp || key === "basics") return null;
         const idx = sectionOrder.indexOf(key);
-        return React.createElement(Comp, { ...commonProps, key, onMoveUp: () => onMoveSectionUp(key), onMoveDown: () => onMoveSectionDown(key), isFirst: idx === 0, isLast: idx === sectionOrder.length - 1 });
+        if (Comp && key !== "basics") {
+          return React.createElement(Comp, { ...commonProps, key, onMoveUp: () => onMoveSectionUp(key), onMoveDown: () => onMoveSectionDown(key), isFirst: idx === 0, isLast: idx === sectionOrder.length - 1 });
+        }
+        // Custom section: find by id
+        const cs = resume.customSections.find(s => s.id === key);
+        if (cs) {
+          return (
+            <React.Fragment key={cs.id}>
+              <SectionHeader title={cs.title} count={cs.items.length} icon={ICON_MAP[cs.icon] || <Star className="w-3.5 h-3.5" />} open={!!openSections[cs.id]} onToggle={() => toggle(cs.id)} visible={visible(cs.id)} onToggleVisibility={() => togVis(cs.id)} sectionKey={cs.id} onTitleChange={(k, v) => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === k ? { ...x, title: v } : x) })} iconKey={cs.icon} onIconChange={k => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, icon: k } : x) })} onMoveUp={() => onMoveSectionUp(key)} onMoveDown={() => onMoveSectionDown(key)} isFirst={idx === 0} isLast={idx === sectionOrder.length - 1} onDelete={() => onChange({ ...resume, customSections: resume.customSections.filter(x => x.id !== cs.id) })} />
+              <AnimatedSection open={!!openSections[cs.id]}>
+                <div className="px-2 pb-3 space-y-1">
+                  <input className={inputCls} value={cs.title} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, title: e.target.value } : x) })} placeholder="Section title" />
+                  <textarea className={inputCls} value={cs.description || ""} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, description: e.target.value } : x) })} placeholder="Description (optional)" rows={2} />
+                  <div className="pt-2"><span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-2">Items</span>
+                    {cs.items.map((item: any) => (
+                      <div key={item.id} className="flex gap-1.5 items-center mb-2">
+                        <input className={inputCls} value={item.text} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.map((i: any) => i.id === item.id ? { ...i, text: e.target.value } : i) } : x) })} />
+                        <button onClick={() => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.filter((i: any) => i.id !== item.id) } : x) })} className="p-1 text-slate-300 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    ))}
+                    <button onClick={() => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: [...x.items, { id: "csi_" + nextId(), text: "" }] } : x) })} className={btnCls}><Plus className="w-3 h-3" />Add Item</button>
+                  </div>
+                </div>
+              </AnimatedSection>
+            </React.Fragment>
+          );
+        }
+        return null;
       })}
-      {/* Custom sections */}
-      {resume.customSections.map(sec => (
-        <React.Fragment key={sec.id}>
-          <SectionHeader title={sec.title} count={sec.items.length} icon={ICON_MAP[sec.icon] || <Star className="w-3.5 h-3.5" />} open={!!openSections[sec.id]} onToggle={() => toggle(sec.id)} onDelete={() => onChange({ ...resume, customSections: resume.customSections.filter(x => x.id !== sec.id) })} />
-          <AnimatedSection open={!!openSections[sec.id]}><div className="px-2 pb-3"><p className="text-xs text-slate-400">Custom section content</p></div></AnimatedSection>
-        </React.Fragment>
-      ))}
-      <button onClick={() => addL("customSections", { id: "cs_" + nextId(), title: "NEW SECTION", icon: "star", description: "", items: [] })} className={btnCls}><Plus className="w-3 h-3" />Add Section</button>
+      <button onClick={() => { const id = "cs_" + nextId(); addL("customSections", { id, title: "NEW SECTION", icon: "star", description: "", items: [] }); onAddCustomSection(id); }} className={btnCls}><Plus className="w-3 h-3" />Add Section</button>
     </div>
   );
 }

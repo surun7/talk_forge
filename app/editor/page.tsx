@@ -148,6 +148,8 @@ export default function EditorPage() {
     updateResume((prev: Resume) => ({ ...prev, basics: { ...prev.basics, photo: dataUrl } }));
   }, [updateResume]);
 
+  const handleAddCustomSection = useCallback((id: string) => { setSectionOrder(prev => [...prev, id]); }, []);
+
   const handleResumeUpdate = useCallback((updated: Resume) => {
     updateResumeDebounced(updated);
   }, [updateResumeDebounced]);
@@ -175,6 +177,7 @@ export default function EditorPage() {
       sectionOrder={sectionOrder}
       onMoveSectionUp={moveSectionUp}
       onMoveSectionDown={moveSectionDown}
+      onAddCustomSection={handleAddCustomSection}
       externalConversations={conversations}
       onConversationsChange={setConversations}
     />

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, Plus, Trash2, Pencil, Check, FileText } from "lucide-react";
 import { getStorageAdapter, type ProjectMeta } from "@/lib/storage";
+import DashboardSidebar from "@/components/dashboard-sidebar";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -59,6 +60,11 @@ export default function Dashboard() {
     return <div className="h-full flex items-center justify-center"><p className="text-slate-400">Loading...</p></div>;
   }
 
+  function handleImportComplete() { loadProjects(); }
+  function loadProjects() {
+    storage.loadProjectsIndex().then(setProjects);
+  }
+
   return (
     <div className="h-full flex flex-col" style={{ background: "var(--bg)", color: "var(--fg)" }}>
       {/* Header */}
@@ -77,8 +83,10 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      {/* Body: sidebar + content */}
+      <div className="flex-1 flex min-h-0">
+        <DashboardSidebar onImportComplete={handleImportComplete} />
+        <div className="flex-1 overflow-y-auto p-6">
         {projects.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -131,6 +139,7 @@ export default function Dashboard() {
             ))}
           </div>
         )}
+        </div>
       </div>
 
       {/* Delete confirmation */}

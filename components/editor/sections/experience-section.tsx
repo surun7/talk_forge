@@ -9,11 +9,18 @@ interface Props {
   resume: Resume; onChange: (r: Resume) => void; openSections: Record<string, boolean>;
   toggle: (k: string) => void; visible: (k: string) => boolean; togVis: (k: string) => void;
   sectionTitle: (k: string, f: string) => string; sectionIconEl: (k: string, f: string) => React.ReactNode;
-  sLabel: (k: string, v: string) => void;
+  sLabel: (k: string, v: string) => void; sIcon: (k: string, f: string) => string; sIconSet: (k: string, v: string) => void;
   onMoveUp?: () => void; onMoveDown?: () => void; isFirst?: boolean; isLast?: boolean;
 }
 
-export default function ExperienceSection({ resume, onChange, openSections, toggle, visible, togVis, sectionTitle, sectionIconEl, sLabel, onMoveUp, onMoveDown, isFirst, isLast }: Props) {
+export default function ExperienceSection({ resume, onChange, openSections, toggle, visible, togVis, sectionTitle, sectionIconEl, sLabel, sIcon, sIconSet, onMoveUp, onMoveDown, isFirst, isLast }: Props) {
+  function moveItem(idx: number, dir: number) {
+    const arr = [...resume.experience];
+    const target = idx + dir;
+    if (target < 0 || target >= arr.length) return;
+    [arr[idx], arr[target]] = [arr[target], arr[idx]];
+    onChange({ ...resume, experience: arr });
+  }
   const setOpenItems = (id: string) => {
     const key = `exp_${id}`;
     // We track open state via parent — use a simple inline toggle hack
@@ -23,12 +30,12 @@ export default function ExperienceSection({ resume, onChange, openSections, togg
 
   return (<>
     <SectionHeader title={sectionTitle("experience", "EXPERIENCE")} count={resume.experience.length} icon={sectionIconEl("experience", "briefcase")} open={!!openSections.experience} onToggle={() => toggle("experience")}
-      visible={visible("experience")} onToggleVisibility={() => togVis("experience")} sectionKey="experience" onTitleChange={sLabel}
+      visible={visible("experience")} onToggleVisibility={() => togVis("experience")} sectionKey="experience" onTitleChange={sLabel} iconKey={sIcon("experience","briefcase")} onIconChange={k => sIconSet("experience",k)}
       onMoveUp={onMoveUp} onMoveDown={onMoveDown} isFirst={isFirst} isLast={isLast} />
     <AnimatedSection open={!!openSections.experience}>
       <div className="px-2 pb-3 space-y-1">
-        {resume.experience.map(exp => (
-          <CollapsibleItem key={exp.id} title={exp.company || "New Experience"} subtitle={exp.position} open={!!openSections[exp.id]} onToggle={() => toggle(exp.id)} onDelete={() => { onChange({ ...resume, experience: resume.experience.filter(x => x.id !== exp.id) }); }}>
+        {resume.experience.map((exp, idx) => (
+          <CollapsibleItem key={exp.id} title={exp.company || "New Experience"} open={!!openSections[exp.id]} onToggle={() => toggle(exp.id)} onMoveUp={() => moveItem(idx, -1)} onMoveDown={() => moveItem(idx, 1)} isFirst={idx === 0} isLast={idx === resume.experience.length - 1} onDelete={() => { onChange({ ...resume, experience: resume.experience.filter(x => x.id !== exp.id) }); }}>
             <Field label="Company"><input className={inputCls} value={exp.company} onChange={e => onChange({ ...resume, experience: resume.experience.map(x => x.id === exp.id ? { ...x, company: e.target.value } : x) })} /></Field>
             <div className="flex gap-2">
               <div className="flex-1"><Field label="Position"><input className={inputCls} value={exp.position} onChange={e => onChange({ ...resume, experience: resume.experience.map(x => x.id === exp.id ? { ...x, position: e.target.value } : x) })} /></Field></div>

@@ -12,14 +12,14 @@ interface Props {
   toggle: (k: string) => void;
   sectionTitle: (k: string, f: string) => string;
   sectionIconEl: (k: string, f: string) => React.ReactNode;
-  upBasic: (f: string, v: string) => void;
+  upBasic: (f: string, v: string) => void; sIcon: (k: string, f: string) => string; sIconSet: (k: string, v: string) => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
   isFirst?: boolean;
   isLast?: boolean;
 }
 
-export default function BasicsSection({ resume, onChange, onOpenPhotoModal, openSections, toggle, sectionTitle, sectionIconEl, upBasic, onMoveUp, onMoveDown, isFirst, isLast }: Props) {
+export default function BasicsSection({ resume, onChange, onOpenPhotoModal, openSections, toggle, sectionTitle, sectionIconEl, upBasic, sIcon, sIconSet, onMoveUp, onMoveDown, isFirst, isLast }: Props) {
   return (<>
     <div className="px-2 pb-3">
       <button onClick={onOpenPhotoModal} className="flex items-center justify-center gap-2 text-xs font-semibold w-full py-4 rounded-xl text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-all duration-200 bg-slate-50 dark:bg-slate-800/60 shadow-[0_0_0_2px_#cbd5e1] dark:shadow-[0_0_0_2px_#334155] hover:shadow-[0_0_0_2px_#a5b4fc] dark:hover:shadow-[0_0_0_2px_#6366f1]">

@@ -37,6 +37,7 @@ interface ChatPanelProps {
  sectionOrder: string[];
  onMoveSectionUp: (key: string) => void;
  onMoveSectionDown: (key: string) => void;
+  onAddCustomSection: (id: string) => void;
   externalConversations?: Conversation[];
   onConversationsChange?: (convs: Conversation[]) => void;
 }
@@ -93,6 +94,7 @@ export default function ChatPanel({
  sectionOrder,
  onMoveSectionUp,
  onMoveSectionDown,
+ onAddCustomSection,
  externalConversations,
  onConversationsChange,
 }: ChatPanelProps) {
@@ -438,7 +440,7 @@ export default function ChatPanel({
  onOpenPhotoModal={onOpenPhotoModal}
  sectionOrder={sectionOrder}
  onMoveSectionUp={onMoveSectionUp}
- onMoveSectionDown={onMoveSectionDown}
+ onMoveSectionDown={onMoveSectionDown} onAddCustomSection={onAddCustomSection}
  />
  </div>
  ) : (

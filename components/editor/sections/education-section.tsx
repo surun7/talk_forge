@@ -9,19 +9,20 @@ interface Props {
   resume: Resume; onChange: (r: Resume) => void; openSections: Record<string, boolean>;
   toggle: (k: string) => void; visible: (k: string) => boolean; togVis: (k: string) => void;
   sectionTitle: (k: string, f: string) => string; sectionIconEl: (k: string, f: string) => React.ReactNode;
-  sLabel: (k: string, v: string) => void;
+  sLabel: (k: string, v: string) => void; sIcon: (k: string, f: string) => string; sIconSet: (k: string, v: string) => void;
   onMoveUp?: () => void; onMoveDown?: () => void; isFirst?: boolean; isLast?: boolean;
 }
 
-export default function EducationSection({ resume, onChange, openSections, toggle, visible, togVis, sectionTitle, sectionIconEl, sLabel, onMoveUp, onMoveDown, isFirst, isLast }: Props) {
+export default function EducationSection({ resume, onChange, openSections, toggle, visible, togVis, sectionTitle, sectionIconEl, sLabel, sIcon, sIconSet, onMoveUp, onMoveDown, isFirst, isLast }: Props) {
+  function moveItem(idx: number, dir: number) { const arr = [...resume.education]; const target = idx + dir; if (target < 0 || target >= arr.length) return; [arr[idx], arr[target]] = [arr[target], arr[idx]]; onChange({ ...resume, education: arr }); }
   return (<>
     <SectionHeader title={sectionTitle("education", "EDUCATION")} count={resume.education.length} icon={sectionIconEl("education", "graduation-cap")} open={!!openSections.education} onToggle={() => toggle("education")}
-      visible={visible("education")} onToggleVisibility={() => togVis("education")} sectionKey="education" onTitleChange={sLabel}
+      visible={visible("education")} onToggleVisibility={() => togVis("education")} sectionKey="education" onTitleChange={sLabel} iconKey={sIcon("education","graduation-cap")} onIconChange={k => sIconSet("education",k)}
       onMoveUp={onMoveUp} onMoveDown={onMoveDown} isFirst={isFirst} isLast={isLast} />
     <AnimatedSection open={!!openSections.education}>
       <div className="px-2 pb-3 space-y-1">
-        {resume.education.map(edu => (
-          <CollapsibleItem key={edu.id} title={edu.school || "New Education"} subtitle={edu.degree} open={!!openSections[edu.id]} onToggle={() => toggle(edu.id)} onDelete={() => onChange({ ...resume, education: resume.education.filter(x => x.id !== edu.id) })}>
+        {resume.education.map((edu, idx) => (
+          <CollapsibleItem key={edu.id} title={edu.school || "New Education"} open={!!openSections[edu.id]} onToggle={() => toggle(edu.id)} onMoveUp={() => moveItem(idx, -1)} onMoveDown={() => moveItem(idx, 1)} isFirst={idx === 0} isLast={idx === resume.education.length - 1} onDelete={() => onChange({ ...resume, education: resume.education.filter(x => x.id !== edu.id) })}>
             <Field label="School"><input className={inputCls} value={edu.school} onChange={e => onChange({ ...resume, education: resume.education.map(x => x.id === edu.id ? { ...x, school: e.target.value } : x) })} /></Field>
             <div className="flex gap-2">
               <div className="flex-1"><Field label="Degree"><input className={inputCls} value={edu.degree} onChange={e => onChange({ ...resume, education: resume.education.map(x => x.id === edu.id ? { ...x, degree: e.target.value } : x) })} /></Field></div>
