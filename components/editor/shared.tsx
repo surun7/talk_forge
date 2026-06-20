@@ -128,7 +128,7 @@ export function CollapsibleItem({ title, subtitle, open, onToggle, onDelete, onM
   children: React.ReactNode;
 }) {
   return (<div className={"border-2 rounded-xl transition-all duration-300 " + (open ? "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800" : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:border-slate-400 hover:shadow-sm")}>
-    <div role="button" tabIndex={0} onClick={onToggle} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); } }} className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-slate-50 rounded-xl transition-all duration-200 cursor-pointer">
+    <div role="button" tabIndex={0} onClick={onToggle} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); } }} className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-slate-100 dark:hover:bg-slate-700/60 rounded-xl transition-all duration-200 cursor-pointer">
       <span className={"transition-transform duration-300 " + (open ? "rotate-0" : "-rotate-90")}><ChevronDown className="w-3 h-3 text-slate-400" /></span>
       <span className="flex-1 text-xs font-medium text-slate-700 dark:text-slate-200 truncate">{title}</span>
       {subtitle && <span className="text-[10px] text-slate-400">{subtitle}</span>}
@@ -144,7 +144,7 @@ export function CollapsibleItem({ title, subtitle, open, onToggle, onDelete, onM
         )}
       </div>
     </div>
-    <div className="grid transition-[grid-template-rows] duration-300 ease-out" style={{ gridTemplateRows: open ? "1fr" : "0fr" }}><div className="overflow-hidden"><div className="px-3 pb-3 space-y-1">{children}</div></div></div>
+    <div className="grid transition-[grid-template-rows] duration-300 ease-out" style={{ gridTemplateRows: open ? "1fr" : "0fr" }}><div className="overflow-hidden"><div className="px-3 pt-2 pb-3 space-y-1">{children}</div></div></div>
   </div>);
 }
 

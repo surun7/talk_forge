@@ -119,6 +119,14 @@ export default function EditorPage() {
     setCanRedo(indexRef.current < historyRef.current.length - 1);
   }, [setResume]);
 
+  // Expose sectionOrder setter for chat panel SSE
+  useEffect(() => {
+    (window as any).__talkForgeSetSectionOrder = (order: string[]) => {
+      setSectionOrder(order);
+    };
+    return () => { delete (window as any).__talkForgeSetSectionOrder; };
+  }, []);
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement)?.isContentEditable) return;
@@ -150,7 +158,25 @@ export default function EditorPage() {
 
   const handleAddCustomSection = useCallback((id: string) => { setSectionOrder(prev => [...prev, id]); }, []);
 
+  const prevCsIdsRef = useRef(new Set(resume.customSections.map(s => s.id)));
+  useEffect(() => { prevCsIdsRef.current = new Set(resume.customSections.map(s => s.id)); }, [resume.customSections]);
+
+  // On load, ensure all custom section IDs are in sectionOrder
+  useEffect(() => {
+    if (!resume || isLoading) return;
+    const missing = resume.customSections.filter(s => !sectionOrder.includes(s.id)).map(s => s.id);
+    if (missing.length > 0) {
+      setSectionOrder(prev => [...prev, ...missing]);
+    }
+  }, [isLoading]); // run once after load
+
   const handleResumeUpdate = useCallback((updated: Resume) => {
+    // Sync new custom sections from AI into sectionOrder
+    const newIds = updated.customSections.filter(s => !prevCsIdsRef.current.has(s.id)).map(s => s.id);
+    if (newIds.length > 0) {
+      setSectionOrder(prev => [...prev, ...newIds.filter(id => !prev.includes(id))]);
+    }
+    prevCsIdsRef.current = new Set(updated.customSections.map(s => s.id));
     updateResumeDebounced(updated);
   }, [updateResumeDebounced]);
 

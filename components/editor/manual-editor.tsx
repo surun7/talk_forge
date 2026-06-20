@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import type { Resume } from "@/lib/resume-schema";
 import { nextId } from "@/lib/resume-schema";
 import { Plus, Star, Trash2 } from "lucide-react";
-import { SectionHeader, AnimatedSection, btnCls, inputCls, ICON_MAP } from "./shared";
+import { SectionHeader, AnimatedSection, btnCls, inputCls, ICON_MAP, FormattedField, CollapsibleItem, Field } from "./shared";
 import { sectionComponents } from "./section-render-map";
 
 interface Props {
@@ -64,16 +64,18 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
               <SectionHeader title={cs.title} count={cs.items.length} icon={ICON_MAP[cs.icon] || <Star className="w-3.5 h-3.5" />} open={!!openSections[cs.id]} onToggle={() => toggle(cs.id)} visible={visible(cs.id)} onToggleVisibility={() => togVis(cs.id)} sectionKey={cs.id} onTitleChange={(k, v) => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === k ? { ...x, title: v } : x) })} iconKey={cs.icon} onIconChange={k => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, icon: k } : x) })} onMoveUp={() => onMoveSectionUp(key)} onMoveDown={() => onMoveSectionDown(key)} isFirst={idx === 0} isLast={idx === sectionOrder.length - 1} onDelete={() => onChange({ ...resume, customSections: resume.customSections.filter(x => x.id !== cs.id) })} />
               <AnimatedSection open={!!openSections[cs.id]}>
                 <div className="px-2 pb-3 space-y-1">
-                  <input className={inputCls} value={cs.title} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, title: e.target.value } : x) })} placeholder="Section title" />
-                  <textarea className={inputCls} value={cs.description || ""} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, description: e.target.value } : x) })} placeholder="Description (optional)" rows={2} />
-                  <div className="pt-2"><span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-2">Items</span>
-                    {cs.items.map((item: any) => (
-                      <div key={item.id} className="flex gap-1.5 items-center mb-2">
-                        <input className={inputCls} value={item.text} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.map((i: any) => i.id === item.id ? { ...i, text: e.target.value } : i) } : x) })} />
-                        <button onClick={() => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.filter((i: any) => i.id !== item.id) } : x) })} className="p-1 text-slate-300 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
-                      </div>
+                  <div className="pt-1"><span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-2">Items</span>
+                    <div className="space-y-2 mb-3">
+                    {cs.items.map((item: any, i2: number) => (
+                      <CollapsibleItem key={item.id + "_" + i2 + "_" + cs.id} title={item.name || (item as any).text || `Item ${i2 + 1}`} open={!!openSections[item.id]} onToggle={() => toggle(item.id)} onDelete={() => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.filter((i: any) => i.id !== item.id) } : x) })}>
+                        <Field label="Name"><input className={inputCls} value={item.name || (item as any).text || ""} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.map((i: any) => i.id === item.id ? { ...i, name: e.target.value } : i) } : x) })} /></Field>
+                        <Field label="Affiliation"><input className={inputCls} value={item.affiliation || ""} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.map((i: any) => i.id === item.id ? { ...i, affiliation: e.target.value } : i) } : x) })} /></Field>
+                        <Field label="Time"><input className={inputCls} value={item.time || ""} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.map((i: any) => i.id === item.id ? { ...i, time: e.target.value } : i) } : x) })} /></Field>
+                        <FormattedField label="Description" value={item.description || ""} onChange={v => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.map((i: any) => i.id === item.id ? { ...i, description: v } : i) } : x) })} />
+                      </CollapsibleItem>
                     ))}
-                    <button onClick={() => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: [...x.items, { id: "csi_" + nextId(), text: "" }] } : x) })} className={btnCls}><Plus className="w-3 h-3" />Add Item</button>
+                    </div>
+                    <button onClick={() => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: [...x.items, { id: "csi_" + nextId(), name: "", affiliation: "", time: "", description: "" }] } : x) })} className={btnCls}><Plus className="w-3 h-3" />Add Item</button>
                   </div>
                 </div>
               </AnimatedSection>

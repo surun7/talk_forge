@@ -196,7 +196,7 @@ function renderRichText(html: string) {
       />
     );
   }
-  return <div className="whitespace-pre-wrap">{html}</div>;
+  return <div className="whitespace-pre-wrap">{html.replace(/&nbsp;/g, " ")}</div>;
 }
 
 function ResumeContent({
@@ -713,34 +713,50 @@ function ResumeContent({
 
         {sectionOrder.flatMap((key) => {
           const el = previewSectionMap[key];
-          return el ? [<React.Fragment key={key}>{el}</React.Fragment>] : [];
+          if (el) return [<React.Fragment key={key}>{el}</React.Fragment>];
+          const cs = customSections.find(s => s.id === key);
+          if (cs) {
+            return [<React.Fragment key={cs.id}>
+              <section className="mb-5">
+                <SectionHeader icon={PREVIEW_ICONS[cs.icon] || <Star className="w-3.5 h-3.5 a-icon" />} title={cs.title} accent={a} />
+                {cs.description && <div className="text-[1em] mt-0.5 text-slate-600">{renderRichText(cs.description)}</div>}
+                {cs.items.length > 0 && (
+                  <div className="space-y-3">
+                    {cs.items.map((item: any, i2: number) => (
+                      <div key={item.id + "_" + i2 + "_" + cs.id} className="pb-3 mb-3 pl-3 border-l-2 a-border border-b border-slate-100">
+                        <div className="flex justify-between items-baseline">
+                          <span className="font-bold text-[1em] text-slate-800">{item.name || (item as any).text}</span>
+                          <span className="text-[0.833em] text-slate-400 italic">{item.time}</span>
+                        </div>
+                        {item.affiliation && <p className="text-[1em] text-slate-500">{item.affiliation}</p>}
+                        {item.description && <div className="text-[1em] mt-1 text-slate-600">{renderRichText(item.description)}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </React.Fragment>];
+          }
+          return [];
         })}
-        {customSections.map((sec) => (
+        {/* fallback: custom sections not in sectionOrder */}
+        {customSections.filter(sec => !sectionOrder.includes(sec.id)).map((sec) => (
           <section key={sec.id} className="mb-5">
-            <SectionHeader
-              icon={<Star className="w-3.5 h-3.5 a-icon" />}
-              title={sec.title}
-              accent={a}
-            />
-            {sec.description && (
-              <div className="text-[1em] mt-0.5 text-slate-600">
-                {renderRichText(sec.description)}
-              </div>
-            )}
+            <SectionHeader icon={PREVIEW_ICONS[sec.icon] || <Star className="w-3.5 h-3.5 a-icon" />} title={sec.title} accent={a} />
+            {sec.description && <div className="text-[1em] mt-0.5 text-slate-600">{renderRichText(sec.description)}</div>}
             {sec.items.length > 0 && (
-              <ul className="space-y-0.5">
-                {sec.items.map((item) => (
-                  <li
-                    key={item.id}
-                    className="text-[1em] text-slate-600 flex items-center gap-1.5"
-                  >
-                    <span className="a-bullet flex-shrink-0 leading-none">
-                      ●
-                    </span>
-                    <span>{item.text}</span>
-                  </li>
+              <div className="space-y-3">
+                {sec.items.map((item: any, i2: number) => (
+                  <div key={item.id + "_" + i2 + "_" + sec.id} className="pb-3 mb-3 pl-3 border-l-2 a-border border-b border-slate-100">
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-bold text-[1em] text-slate-800">{item.name || (item as any).text}</span>
+                      <span className="text-[0.833em] text-slate-400 italic">{item.time}</span>
+                    </div>
+                    {item.affiliation && <p className="text-[1em] text-slate-500">{item.affiliation}</p>}
+                    {item.description && <div className="text-[1em] mt-1 text-slate-600">{renderRichText(item.description)}</div>}
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
         ))}

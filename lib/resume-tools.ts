@@ -5,6 +5,24 @@ import { nextId } from "./resume-schema";
 
 type ResumeStore = { current: Resume };
 
+// ---------- Section Utilities ----------
+
+export function makeRenameSection(store: ResumeStore) {
+  return tool({
+    description: "Rename a section's display title (e.g. change 'Projects' to 'Academic Projects'). Section key must be one of: overview, experience, education, skills, projects, certificates, publications, languages, honors, hobbies, volunteers.",
+    inputSchema: z.object({
+      sectionKey: z.string(),
+      newTitle: z.string(),
+    }),
+    execute: async (args) => {
+      const labels = (store.current.basics.sectionLabels || {}) as Record<string, string>;
+      labels[args.sectionKey] = args.newTitle;
+      store.current.basics.sectionLabels = labels;
+      return `Section "${args.sectionKey}" renamed to "${args.newTitle}".`;
+    },
+  });
+}
+
 // ---------- Basics ----------
 
 const FONT_OPTIONS = ["lora","inter","merriweather","ibm-plex-serif","crimson-pro","eb-garamond","libre-baskerville","noto-serif","source-serif-4","fira-sans","work-sans","nunito","space-grotesk","noto-sans-sc","noto-serif-sc","zcool-xiaowei"] as const;
@@ -38,7 +56,7 @@ export function makeUpdateBasics(store: ResumeStore) {
       if (args.location !== undefined) store.current.basics.location = args.location;
       if (args.birth !== undefined) store.current.basics.birth = args.birth;
       if (args.summary !== undefined) store.current.basics.summary = args.summary;
-      if (args.sectionLabels !== undefined) store.current.basics.sectionLabels = args.sectionLabels;
+      if (args.sectionLabels !== undefined) store.current.basics.sectionLabels = { ...store.current.basics.sectionLabels, ...args.sectionLabels };
       if (args.hiddenSections !== undefined) store.current.basics.hiddenSections = args.hiddenSections;
       if (args.font !== undefined) store.current.basics.font = args.font;
       if (args.fontSize !== undefined) store.current.basics.fontSize = args.fontSize;
@@ -247,6 +265,22 @@ export function makeAddSkillCategory(store: ResumeStore) {
   });
 }
 
+export function makeUpdateSkillCategory(store: ResumeStore) {
+  return tool({
+    description: "Rename a skill category by its ID.",
+    inputSchema: z.object({
+      id: z.string(),
+      name: z.string(),
+    }),
+    execute: async (args) => {
+      const cat = store.current.skills.find((c) => c.id === args.id);
+      if (!cat) return `Category ${args.id} not found.`;
+      cat.name = args.name;
+      return `Category renamed to "${args.name}".`;
+    },
+  });
+}
+
 export function makeDeleteSkillCategory(store: ResumeStore) {
   return tool({
     description: "Delete a skill category by its ID.",
@@ -440,6 +474,7 @@ export function makeUpdatePublication(store: ResumeStore) {
     inputSchema: z.object({
       id: z.string(),
       title: z.string().optional(),
+      author: z.string().optional(),
       publisher: z.string().optional(),
       date: z.string().optional(),
       url: z.string().url().or(z.literal("")).optional(),
@@ -658,13 +693,16 @@ export function makeAddCustomSectionItem(store: ResumeStore) {
     description: "Add an item to a custom section by section ID.",
     inputSchema: z.object({
       sectionId: z.string(),
-      text: z.string(),
+      name: z.string(),
+      affiliation: z.string().optional(),
+      time: z.string().optional(),
+      description: z.string().optional(),
     }),
     execute: async (args) => {
       const section = store.current.customSections.find((s) => s.id === args.sectionId);
       if (!section) return `Custom section ${args.sectionId} not found.`;
-      section.items.push({ id: nextId(), text: args.text });
-      return `Item added to "${section.title}".`;
+      section.items.push({ id: nextId(), name: args.name, affiliation: args.affiliation || "", time: args.time || "", description: args.description || "" });
+      return `Item "${args.name}" added to "${section.title}".`;
     },
   });
 }
@@ -674,17 +712,21 @@ export function makeUpdateCustomSectionItem(store: ResumeStore) {
     description: "Update an item in a custom section by item ID.",
     inputSchema: z.object({
       itemId: z.string(),
-      text: z.string().optional(),
+      name: z.string().optional(),
+      affiliation: z.string().optional(),
+      time: z.string().optional(),
+      description: z.string().optional(),
     }),
     execute: async (args) => {
+      const { itemId, ...fields } = args;
       for (const section of store.current.customSections) {
-        const item = section.items.find((i) => i.id === args.itemId);
+        const item = section.items.find((i) => i.id === itemId);
         if (item) {
-          if (args.text !== undefined) item.text = args.text;
+          Object.assign(item, fields);
           return `Item updated in "${section.title}".`;
         }
       }
-      return `Item ${args.itemId} not found.`;
+      return `Item ${itemId} not found.`;
     },
   });
 }
@@ -751,6 +793,113 @@ export function makeDeleteLanguage(store: ResumeStore) {
   });
 }
 
+// ---------- Section Order ----------
+
+let _sectionOrderCallback: ((order: string[]) => void) | null = null;
+export function setSectionOrderCallback(cb: (order: string[]) => void) {
+  _sectionOrderCallback = cb;
+}
+
+export function makeReorderSections(store: ResumeStore) {
+  return tool({
+    description: "Reorder top-level sections of the resume. Provide the full desired order as an array of section keys. Available keys: overview, experience, education, skills, projects, certificates, publications, languages, honors, hobbies, volunteers, plus any custom section IDs (get them from listItems). Example: [\"overview\",\"experience\",\"education\",\"custom_123\"] moves custom_123 after education.",
+    inputSchema: z.object({
+      order: z.array(z.string()),
+    }),
+    execute: async (args) => {
+      if (_sectionOrderCallback) {
+        _sectionOrderCallback(args.order);
+      }
+      return `Sections reordered. New order: ${args.order.join(", ")}`;
+    },
+  });
+}
+
+// ---------- Reorder ----------
+
+export function makeReorderSubItems(store: ResumeStore) {
+  const SUB_SECTIONS = ["experience:highlights","skills:skills","projects:technologies"] as const;
+  return tool({
+    description: `Reorder sub-items within a parent item. Use format "section:field" for section: ${SUB_SECTIONS.join(", ")}. Provide parentItemId and a list of sub-item values (strings) in desired order.`,
+    inputSchema: z.object({
+      sectionField: z.enum(SUB_SECTIONS),
+      parentItemId: z.string(),
+      values: z.array(z.string()),
+    }),
+    execute: async (args) => {
+      const [section, field] = args.sectionField.split(":") as [string, string];
+      const arr = (store.current as any)[section] as any[];
+      if (!arr) return `Section "${section}" not found.`;
+      const parent = arr.find((p: any) => p.id === args.parentItemId);
+      if (!parent) return `Parent item ${args.parentItemId} not found in ${section}.`;
+
+      if (field === "highlights" || field === "technologies") {
+        // These are string arrays — reorder by value
+        const oldList: string[] = parent[field] || [];
+        const seen = new Set<string>();
+        const reordered: string[] = [];
+        for (const v of args.values) {
+          if (seen.has(v)) continue;
+          seen.add(v);
+          if (oldList.includes(v)) reordered.push(v);
+        }
+        for (const v of oldList) {
+          if (!seen.has(v)) reordered.push(v);
+        }
+        parent[field] = reordered;
+      } else if (field === "skills") {
+        // Skills are {id, name} objects — reorder by name
+        const oldList: { id: string; name: string }[] = parent[field] || [];
+        const nameMap = new Map(oldList.map((s: any) => [s.name, s]));
+        const seen = new Set<string>();
+        const reordered: typeof oldList = [];
+        for (const name of args.values) {
+          if (seen.has(name)) continue;
+          seen.add(name);
+          const sk = nameMap.get(name);
+          if (sk) reordered.push(sk);
+        }
+        for (const sk of oldList) {
+          if (!seen.has(sk.name)) reordered.push(sk);
+        }
+        parent[field] = reordered;
+      }
+      return `Reordered ${args.sectionField} for parent ${args.parentItemId}.`;
+    },
+  });
+}
+
+export function makeReorderSectionItems(store: ResumeStore) {
+  const REORDERABLE = ["experience","education","skills","projects","certificates","publications","languages","honors","hobbies","volunteers","customSections"] as const;
+  return tool({
+    description: `Reorder items within a section by providing a list of IDs in the desired order. Section must be one of: ${REORDERABLE.join(", ")}. Get current IDs from listItems first.`,
+    inputSchema: z.object({
+      section: z.enum(REORDERABLE),
+      ids: z.array(z.string()),
+    }),
+    execute: async (args) => {
+      const arr = store.current[args.section] as any[];
+      if (!arr) return `Section "${args.section}" not found.`;
+      const idIndex = new Map(arr.map((item: any, i: number) => [item.id, i]));
+      const seen = new Set<string>();
+      const reordered: any[] = [];
+      for (const id of args.ids) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const idx = idIndex.get(id);
+        if (idx === undefined) continue;
+        reordered.push(arr[idx]);
+      }
+      // Append any items not in the provided IDs (keep their order)
+      for (const item of arr) {
+        if (!seen.has(item.id)) reordered.push(item);
+      }
+      (store.current as any)[args.section] = reordered;
+      return `Reordered ${args.section} (${reordered.length} items).`;
+    },
+  });
+}
+
 // ---------- List ----------
 
 export function makeListItems(store: ResumeStore) {
@@ -791,7 +940,7 @@ export function makeListItems(store: ResumeStore) {
           id: v.id, organization: v.organization, role: v.role,
         })),
         customSections: store.current.customSections.map((s) => ({
-          id: s.id, title: s.title, items: s.items.map((i) => ({ id: i.id, text: i.text })),
+          id: s.id, title: s.title, items: s.items.map((i) => ({ id: i.id, name: i.name, affiliation: i.affiliation, time: i.time })),
         })),
       };
       return JSON.stringify(sections, null, 2);
@@ -803,6 +952,7 @@ export function makeListItems(store: ResumeStore) {
 
 export function buildAllTools(store: ResumeStore) {
   return {
+    renameSection: makeRenameSection(store),
     updateBasics: makeUpdateBasics(store),
     updatePhoto: makeUpdatePhoto(store),
     addLink: makeAddLink(store),
@@ -814,6 +964,7 @@ export function buildAllTools(store: ResumeStore) {
     updateEducation: makeUpdateEducation(store),
     deleteEducation: makeDeleteEducation(store),
     addSkillCategory: makeAddSkillCategory(store),
+    updateSkillCategory: makeUpdateSkillCategory(store),
     deleteSkillCategory: makeDeleteSkillCategory(store),
     addSkillToCategory: makeAddSkillToCategory(store),
     deleteSkillFromCategory: makeDeleteSkillFromCategory(store),
@@ -844,6 +995,9 @@ export function buildAllTools(store: ResumeStore) {
     addCustomSectionItem: makeAddCustomSectionItem(store),
     updateCustomSectionItem: makeUpdateCustomSectionItem(store),
     deleteCustomSectionItem: makeDeleteCustomSectionItem(store),
+    reorderSections: makeReorderSections(store),
+    reorderSectionItems: makeReorderSectionItems(store),
+    reorderSubItems: makeReorderSubItems(store),
     listItems: makeListItems(store),
   };
 }

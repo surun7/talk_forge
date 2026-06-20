@@ -1,7 +1,7 @@
 import { streamText, stepCountIs } from "ai";
 import { getModel } from "@/lib/providers";
 import { getCustomProvider, getSafeProviderList } from "@/lib/custom-providers-store";
-import { buildAllTools } from "@/lib/resume-tools";
+import { buildAllTools, setSectionOrderCallback } from "@/lib/resume-tools";
 import { createDefaultResume, type Resume } from "@/lib/resume-schema";
 import { z } from "zod";
 
@@ -11,11 +11,21 @@ CRITICAL: You have access to tools. When the user asks you to add, update, or de
 
 RULES:
 1. When the user asks for a change: call the tool FIRST, then respond with a brief confirmation (e.g. "Added experience at Google.").
+1a. To rename a section (e.g. "change projects to Academic Projects"), use renameSection.
+1b. To reorder sections (e.g. "move overview after experience"), use reorderSections with the full desired order array. Get section keys from listItems first.
 2. When the user asks a question: call listItems first, then answer.
 3. If you need to update or delete and don't know the ID: call listItems first.
 4. Links (LinkedIn, GitHub, portfolio, etc.) are managed with addLink/removeLink tools — do NOT include links in updateBasics.
 5. Profile photo is managed with updatePhoto tool — do NOT include photo in updateBasics.
 6. Keep confirmation responses to 1 short sentence. Never show code or JSON.`;
+
+const providerConfigSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  apiKey: z.string(),
+  baseURL: z.string(),
+  model: z.string(),
+}).optional();
 
 const bodySchema = z.object({
   messages: z.array(
@@ -25,6 +35,8 @@ const bodySchema = z.object({
     })
   ),
   resume: z.any().optional(),
+  sectionOrder: z.array(z.string()).optional(),
+  providerConfig: providerConfigSchema,
 });
 
 export async function POST(req: Request) {
@@ -35,24 +47,31 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid request", details: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { messages, resume } = parsed.data;
+  const { messages, resume, sectionOrder: initialOrder, providerConfig } = parsed.data;
+  const sectionOrderState = { current: initialOrder || [] };
+  setSectionOrderCallback((order: string[]) => { sectionOrderState.current = order; });
 
-  // Use custom provider only
+  // Priority: client-provided config > env var CUSTOM_PROVIDERS_JSON
   let model = null;
   let providerName = "";
 
-  const customList = getSafeProviderList();
-  if (customList.length > 0) {
-    const customConfig = getCustomProvider(customList[0].id);
-    if (customConfig) {
-      model = getModel("custom", customConfig);
-      providerName = `${customConfig.name} (${customConfig.model})`;
+  if (providerConfig && providerConfig.apiKey) {
+    model = getModel("custom", providerConfig);
+    providerName = `${providerConfig.name} (${providerConfig.model})`;
+  } else {
+    const customList = getSafeProviderList();
+    if (customList.length > 0) {
+      const customConfig = getCustomProvider(customList[0].id);
+      if (customConfig) {
+        model = getModel("custom", customConfig);
+        providerName = `${customConfig.name} (${customConfig.model})`;
+      }
     }
   }
 
   if (!model) {
     return Response.json(
-      { error: "No API provider configured. Set CUSTOM_PROVIDERS_JSON in .env.local." },
+      { error: "No API provider configured. Add a provider in Dashboard → API Settings, or set CUSTOM_PROVIDERS_JSON in .env.local." },
       { status: 400 }
     );
   }
@@ -124,17 +143,9 @@ export async function POST(req: Request) {
 
         console.log(`[chat] Done. Tools called: ${toolCallsSeen}`);
 
-        if (toolCallsSeen === 0) {
-          controller.enqueue(
-            encoder.encode(
-              JSON.stringify({ type: "text", text: "\n\n(No tools were called — your provider may not support tool calling.)" }) + "\n"
-            )
-          );
-        }
-
         controller.enqueue(
           encoder.encode(
-            JSON.stringify({ type: "resume", resume: store.current }) + "\n"
+            JSON.stringify({ type: "resume", resume: store.current, sectionOrder: sectionOrderState.current }) + "\n"
           )
         );
         controller.enqueue(encoder.encode(JSON.stringify({ type: "done" }) + "\n"));

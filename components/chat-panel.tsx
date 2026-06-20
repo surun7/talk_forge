@@ -144,10 +144,10 @@ export default function ChatPanel({
  const textareaRef = useRef<HTMLTextAreaElement>(null);
  const historyRef = useRef<HTMLDivElement>(null);
 
- // Load conversations from project or localStorage fallback
+ // Load conversations from project or localStorage fallback (mount only)
  useEffect(() => {
  if (externalConversations && externalConversations.length > 0) {
- setConversations(externalConversations);
+ setConversationsInternal(externalConversations);
  setActiveId(externalConversations[0].id);
  } else {
  try {
@@ -155,14 +155,14 @@ export default function ChatPanel({
  if (raw) {
  const parsed = JSON.parse(raw);
  if (Array.isArray(parsed) && parsed.length > 0) {
- setConversations(parsed as Conversation[]);
+ setConversationsInternal(parsed as Conversation[]);
  setActiveId(parsed[0].id);
  }
  }
  } catch {}
  }
  setHydrated(true);
- }, [externalConversations]);
+ }, []); // mount-only — avoid loop from externalConversations sync
 
  // localStorage fallback for non-project mode
  useEffect(() => {
@@ -306,6 +306,19 @@ export default function ChatPanel({
  content: m.content,
  })),
  resume,
+          sectionOrder,
+          providerConfig: (() => {
+            try {
+              const activeId = localStorage.getItem("talk_forge_api_active_provider");
+              if (!activeId) return undefined;
+              const DEFAULT_URLS: Record<string,string> = {kimi:"https://api.moonshot.cn/v1",minimax:"https://api.minimax.chat/v1",glm:"https://open.bigmodel.cn/api/paas/v4",deepseek:"https://api.deepseek.com/v1",mimo:"https://api.xiaomimimo.com/v1"};
+              const key = localStorage.getItem("talk_forge_api_" + activeId);
+              if (key) { const model = localStorage.getItem("talk_forge_api_" + activeId + "_model") || ""; return { id: activeId, name: activeId, apiKey: key, baseURL: DEFAULT_URLS[activeId] || "", model }; }
+              const custom = localStorage.getItem("talk_forge_api_custom");
+              if (custom) { const arr = JSON.parse(custom); return arr.find((p: any) => p.id === activeId); }
+            } catch {}
+            return undefined;
+          })(),
  }),
  });
 
@@ -361,6 +374,9 @@ export default function ChatPanel({
  resumeUpdated = true;
  setAgentStatus("done");
  onResumeUpdate(data.resume);
+              if (data.sectionOrder && (window as any).__talkForgeSetSectionOrder) {
+                (window as any).__talkForgeSetSectionOrder(data.sectionOrder);
+              }
  }
  } catch (e) {
  console.error(
@@ -380,6 +396,9 @@ export default function ChatPanel({
  resumeUpdated = true;
  setAgentStatus("done");
  onResumeUpdate(data.resume);
+              if (data.sectionOrder && (window as any).__talkForgeSetSectionOrder) {
+                (window as any).__talkForgeSetSectionOrder(data.sectionOrder);
+              }
  }
  } catch (e) {
  console.error("[chat] Final parse error:", e);

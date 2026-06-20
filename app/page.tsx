@@ -1,13 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Plus, Trash2, Pencil, Check, FileText } from "lucide-react";
+import { Sparkles, Plus, Trash2, Pencil, Check, FileText, Sun, Moon } from "lucide-react";
 import { getStorageAdapter, type ProjectMeta } from "@/lib/storage";
 import DashboardSidebar from "@/components/dashboard-sidebar";
 
+function useTheme() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => { setDark(document.documentElement.classList.contains("dark")); }, []);
+  const toggle = () => {
+    const next = !dark; setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    try { localStorage.setItem("talk-forge-theme", next ? "dark" : "light"); } catch {}
+  };
+  return { dark, toggle };
+}
+
 export default function Dashboard() {
   const router = useRouter();
+  const { dark, toggle: toggleTheme } = useTheme();
+  const themeBtnRef = useRef<HTMLButtonElement>(null);
+  const [ripple, setRipple] = useState<{ x: number; y: number; expanding: boolean; goingDark: boolean } | null>(null);
   const [projects, setProjects] = useState<ProjectMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [renameId, setRenameId] = useState<string | null>(null);
@@ -56,6 +70,22 @@ export default function Dashboard() {
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }
 
+  function handleThemeToggle() {
+    if (ripple) return;
+    const btn = themeBtnRef.current;
+    if (!btn) { toggleTheme(); return; }
+    const rect = btn.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const goingDark = !dark;
+    toggleTheme();
+    setRipple({ x, y, expanding: false, goingDark });
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setRipple(prev => prev ? { ...prev, expanding: true } : null));
+    });
+    setTimeout(() => setRipple(null), 550);
+  }
+
   if (loading) {
     return <div className="h-full flex items-center justify-center"><p className="text-slate-400">Loading...</p></div>;
   }
@@ -79,6 +109,13 @@ export default function Dashboard() {
           <button onClick={handleCreate}
             className="ml-4 flex items-center gap-2 h-9 px-4 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200">
             <Plus className="w-3.5 h-3.5" /> New Resume
+          </button>
+        </div>
+        <div className="flex items-center gap-2 ml-auto">
+          <button ref={themeBtnRef} onClick={handleThemeToggle}
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200"
+            title={dark ? "Light mode" : "Dark mode"}>
+            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
         </div>
       </header>
@@ -141,6 +178,17 @@ export default function Dashboard() {
         )}
         </div>
       </div>
+
+      {/* Ripple overlay */}
+      {ripple && (
+        <div className="fixed z-[9998] pointer-events-none" style={{
+          left: ripple.x, top: ripple.y, width: ripple.expanding ? "200vmax" : "1px", height: ripple.expanding ? "200vmax" : "1px",
+          marginLeft: ripple.expanding ? "-100vmax" : "-0.5px", marginTop: ripple.expanding ? "-100vmax" : "-0.5px",
+          borderRadius: "50%", background: "transparent",
+          boxShadow: `0 0 0 100vmax ${ripple.goingDark ? "#f1f5f9" : "#020617"}`,
+          transition: ripple.expanding ? "width 0.45s ease-out, height 0.45s ease-out, margin-left 0.45s ease-out, margin-top 0.45s ease-out" : "none",
+        }} />
+      )}
 
       {/* Delete confirmation */}
       {deleteId && (

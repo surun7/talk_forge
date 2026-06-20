@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { PanelLeftClose, PanelLeftOpen, FolderSync, FolderDown, FolderUp, Loader2, KeyRound } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, FolderDown, FolderUp, Loader2, KeyRound } from "lucide-react";
 import ApiSettingsPanel from "./api-settings-panel";
 import { getStorageAdapter } from "@/lib/storage";
 import { resumeSchema } from "@/lib/resume-schema";
@@ -31,7 +31,7 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
       for (const meta of index) {
         const data = projects[meta.id];
         if (!data) continue;
-        const fileName = (meta.name || "Untitled").replace(/[/\\?%*:|"<>]/g, "_") + ".json";
+        const fileName = "TalkForge_" + (meta.name || "Untitled").replace(/[/\\?%*:|"<>]/g, "_") + ".json";
         const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
         const writable = await fileHandle.createWritable();
         await writable.write(JSON.stringify(data, null, 2));
@@ -101,23 +101,23 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
       {/* Menu items */}
       <div className="flex-1 overflow-y-auto px-2 space-y-1">
         <div className={`flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium text-slate-400 uppercase tracking-wider ${collapsed ? "justify-center" : ""}`}>
-          {!collapsed && (isZh ? "数据管理" : "Data")}
+          {!collapsed && (isZh ? "数据管理" : "Data Management")}
         </div>
 
         {/* Export */}
         <button onClick={handleExport} disabled={exporting}
           className={`flex items-center gap-3 w-full rounded-lg text-sm transition-colors ${collapsed ? "justify-center px-0 py-2" : "px-3 py-2"} text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50`}
-          title={collapsed ? (isZh ? "导出所有项目" : "Export all projects") : ""}>
+          title={collapsed ? (isZh ? "导出简历备份" : "Export Resume Backup") : ""}>
           {exporting ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <FolderUp className="w-4 h-4 shrink-0" />}
-          {!collapsed && <span>{isZh ? "导出所有项目" : "Export All"}</span>}
+          {!collapsed && <span>{isZh ? "导出简历备份" : "Export Resume Backup"}</span>}
         </button>
 
         {/* Import */}
         <button onClick={handleImport} disabled={importing}
           className={`flex items-center gap-3 w-full rounded-lg text-sm transition-colors ${collapsed ? "justify-center px-0 py-2" : "px-3 py-2"} text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50`}
-          title={collapsed ? (isZh ? "从文件夹导入" : "Import from folder") : ""}>
+          title={collapsed ? (isZh ? "导入简历备份" : "Import Resume Backup") : ""}>
           {importing ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <FolderDown className="w-4 h-4 shrink-0" />}
-          {!collapsed && <span>{isZh ? "从文件夹导入" : "Import from Folder"}</span>}
+          {!collapsed && <span>{isZh ? "导入简历备份" : "Import Resume Backup"}</span>}
         </button>
 
         {/* API Settings */}
@@ -136,13 +136,6 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
         </div>
       )}
 
-      {/* Footer */}
-      <div className="px-2 pb-3">
-        <div className={`flex items-center gap-2 px-2 py-2 rounded-lg text-[10px] text-slate-400 ${collapsed ? "justify-center" : ""}`}>
-          {!collapsed && <FolderSync className="w-3.5 h-3.5" />}
-          {!collapsed && (isZh ? "本地文件夹存储" : "Local Folder Storage")}
-        </div>
-      </div>
     </div>
     <ApiSettingsPanel open={showApiSettings} onClose={() => setShowApiSettings(false)} />
   </>);
