@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { X, ZoomIn, ZoomOut, Upload, Check } from "lucide-react";
+import { useLocale } from "@/lib/locale-provider";
 
 interface Props {
  open: boolean;
@@ -16,6 +17,7 @@ const CANVAS_W = 300;
 const CANVAS_H = 350;
 
 export default function PhotoUploadModal({ open, onClose, onSave }: Props) {
+ const { t } = useLocale();
  const [image, setImage] = useState<HTMLImageElement | null>(null);
  const [zoom, setZoom] = useState(1);
  const [offsetX, setOffsetX] = useState(0);
@@ -160,7 +162,7 @@ export default function PhotoUploadModal({ open, onClose, onSave }: Props) {
  <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl shadow-[0_0_0_1px_#e5e5e5] dark:shadow-[0_0_0_1px_#404040] w-full max-w-sm p-5">
  <div className="flex items-center justify-between mb-4">
  <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-100">
- Upload Photo
+ {t("photo.uploadTitle")}
  </h3>
  <button
  onClick={onClose}
@@ -194,7 +196,7 @@ export default function PhotoUploadModal({ open, onClose, onSave }: Props) {
  >
  <Upload className="w-8 h-8 text-neutral-300 dark:text-neutral-600 group-hover:text-indigo-400" />
  <span className="text-xs text-neutral-400 group-hover:text-indigo-500">
- Click to select photo
+ {t("photo.clickToSelect")}
  </span>
  </button>
  )}
@@ -218,7 +220,7 @@ export default function PhotoUploadModal({ open, onClose, onSave }: Props) {
  </span>
  </div>
  <p className="text-[10px] text-neutral-400 text-center">
- Drag to reposition &bull; Scroll or slider to zoom
+ {t("photo.zoomHint")}
  </p>
  </div>
  )}
@@ -235,7 +237,7 @@ export default function PhotoUploadModal({ open, onClose, onSave }: Props) {
  onClick={() => fileRef.current?.click()}
  className="flex-1 px-4 py-2 text-xs rounded-lg shadow-[0_0_0_1px_#d4d4d4] dark:shadow-[0_0_0_1px_#525252] text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
  >
- {image ? "Change Photo" : "Select Photo"}
+ {image ? t("photo.changePhoto") : t("photo.selectPhoto")}
  </button>
  <button
  onClick={handleSave}
@@ -243,7 +245,7 @@ export default function PhotoUploadModal({ open, onClose, onSave }: Props) {
  className="flex items-center gap-1.5 px-4 py-2 text-xs rounded-lg bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold hover:from-indigo-600 hover:to-pink-600 disabled:opacity-40 transition-all"
  >
  <Check className="w-3.5 h-3.5" />
- Apply
+ {t("photo.apply")}
  </button>
  </div>
  </div>

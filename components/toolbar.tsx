@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { useResumePDF } from "@/lib/use-resume-pdf";
+import { useLocale } from "@/lib/locale-provider";
 import {
   Download, Plus, Sparkles, Sun, Moon, Minus, CaseSensitive, Bot, Pencil, ChevronDown, Loader2, Undo2, Redo2, ArrowLeft,
 } from "lucide-react";
@@ -122,6 +123,7 @@ export default function Toolbar({
   onFontChange, onFontSizeChange, onAccentColorChange, editMode, onEditModeChange,
   canUndo, canRedo, onUndo, onRedo, projectName,
 }: ToolbarProps) {
+  const { t } = useLocale();
   const { dark, toggle: toggleTheme } = useTheme();
   const { downloadPDF, isGenerating, progress } = useResumePDF({ fileName });
 
@@ -171,23 +173,23 @@ export default function Toolbar({
 
       {/* ── Left zone: Back + Logo + Undo/Redo + New ── */}
       <div className="flex items-center gap-2 w-[360px] shrink-0">
-        <Link href="/" className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0" title="Back to Dashboard">
+        <Link href="/" className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0" title={t("toolbar.backToDashboard")}>
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
           <Sparkles className="w-3.5 h-3.5 text-white" />
         </div>
-        <span className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight truncate" title={projectName}>{projectName || "Talk Forge"}</span>
+        <span className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight truncate" title={projectName}>{projectName || t("dashboard.title")}</span>
         {/* Undo/Redo */}
         <div className="flex items-center gap-0.5 ml-1">
           <button onMouseDown={e => e.preventDefault()} onClick={onUndo} disabled={!canUndo}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-30"
-            title="Undo (Ctrl+Z)">
+            title={t("toolbar.undo")}>
             <Undo2 className="w-4 h-4" />
           </button>
           <button onMouseDown={e => e.preventDefault()} onClick={onRedo} disabled={!canRedo}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-30"
-            title="Redo (Ctrl+Shift+Z)">
+            title={t("toolbar.redo")}>
             <Redo2 className="w-4 h-4" />
           </button>
         </div>
@@ -227,21 +229,21 @@ export default function Toolbar({
             style={{ transform: editMode === "agent" ? "translateX(0%)" : "translateX(100%)" }} />
           <button onClick={() => onEditModeChange("agent")}
             className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 text-[11px] rounded-md transition-colors duration-200 font-semibold ${editMode === "agent" ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500"}`}>
-            <Bot className="w-3.5 h-3.5" /> Agent
+            <Bot className="w-3.5 h-3.5" /> {t("toolbar.agent")}
           </button>
           <button onClick={() => onEditModeChange("manual")}
             className={`flex-1 relative z-10 flex items-center justify-center gap-1.5 text-[11px] rounded-md transition-colors duration-200 font-semibold ${editMode === "manual" ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500"}`}>
-            <Pencil className="w-3.5 h-3.5" /> Manual
+            <Pencil className="w-3.5 h-3.5" /> {t("toolbar.manual")}
           </button>
         </div>
         <button ref={themeBtnRef} onClick={handleThemeToggle}
-          className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0" title={dark ? "Light mode" : "Dark mode"}>
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0" title={dark ? t("dashboard.lightMode") : t("dashboard.darkMode")}>
           {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
         <button onClick={downloadPDF} disabled={isGenerating}
           className="w-36 h-9 px-4 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200 disabled:opacity-50 flex items-center gap-2 justify-center shrink-0">
           <Download className="w-3.5 h-3.5" />
-          {isGenerating ? `${progress}%` : "Download PDF"}
+          {isGenerating ? `${progress}%` : t("toolbar.downloadPDF")}
         </button>
       </div>
     </header>
@@ -262,7 +264,7 @@ export default function Toolbar({
       <div className="fixed inset-0 z-[10001] flex items-center justify-center" style={{ pointerEvents: "all" }}>
         <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/70 backdrop-blur-md" />
         <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl px-10 py-8 flex flex-col items-center gap-4 min-w-[240px]">
-          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Downloading</p>
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t("toolbar.downloading")}</p>
           <span className="inline-flex gap-1">
             <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
             <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: "0.15s" }} />

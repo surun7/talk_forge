@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Resume } from "@/lib/resume-schema";
 import ManualEditor from "./editor/manual-editor";
+import { useLocale } from "@/lib/locale-provider";
 import {
  Send,
  Sparkles,
@@ -98,6 +99,7 @@ export default function ChatPanel({
  externalConversations,
  onConversationsChange,
 }: ChatPanelProps) {
+ const { t } = useLocale();
  const [conversations, setConversationsInternal] = useState<Conversation[]>(() => {
  return [
  {
@@ -330,7 +332,7 @@ export default function ChatPanel({
  } catch {}
  addMessage(convId, {
  role: "assistant",
- content: `Error: ${errMsg}`,
+ content: t("chat.error", { msg: errMsg }),
  time: Date.now(),
  });
  setLoading(false);
@@ -418,7 +420,7 @@ export default function ChatPanel({
  const msg = err instanceof Error ? err.message : "Network error";
  addMessage(convId, {
  role: "assistant",
- content: `Error: ${msg}`,
+ content: t("chat.error", { msg }),
  time: Date.now(),
  });
  setAgentStatus("idle");
@@ -436,11 +438,11 @@ export default function ChatPanel({
 
  const statusLabel =
  agentStatus === "thinking"
- ? "Thinking..."
+ ? t("chat.thinking")
  : agentStatus === "editing"
- ? "Editing resume..."
+ ? t("chat.editingResume")
  : agentStatus === "done"
- ? "Updated"
+ ? t("chat.updated")
  : "";
 
  return (
@@ -472,7 +474,7 @@ export default function ChatPanel({
  <button
  onClick={() => setShowHistory(!showHistory)}
  className="w-8 h-8 rounded-lg shadow-ring dark:shadow-ring-d flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:shadow-[0_0_0_1px_#94a3b8] dark:hover:shadow-[0_0_0_1px_#64748b] transition-all duration-200"
- title="Conversations"
+ title={t("chat.conversations")}
  >
  <Menu className="w-4 h-4" />
  </button>
@@ -498,13 +500,13 @@ export default function ChatPanel({
  >
  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:shadow-[0_0_0_1px_#334155]">
  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
- Conversations
+ {t("chat.conversations")}
  </span>
  <button
  onClick={newConversation}
  className="flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg px-2 py-1 transition-colors font-medium"
  >
- <Plus className="w-3 h-3" /> New
+ <Plus className="w-3 h-3" /> {t("chat.new")}
  </button>
  </div>
  <div className="max-h-64 overflow-y-auto">
@@ -678,7 +680,7 @@ export default function ChatPanel({
  <button
  onClick={onOpenPhotoModal}
  className="flex-shrink-0 w-9 h-9 rounded-xl shadow-ring dark:shadow-ring-d flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-indigo-500 hover:shadow-[0_0_0_1px_#a5b4fc] hover:shadow-sm hover:shadow-indigo-200/50 dark:hover:border-indigo-700 transition-all duration-200"
- title="Upload photo"
+ title={t("chat.uploadPhoto")}
  >
  <Camera className="w-4 h-4" />
  </button>
@@ -687,7 +689,7 @@ export default function ChatPanel({
  value={input}
  onChange={(e) => setInput(e.target.value)}
  onKeyDown={handleKeyDown}
- placeholder="Tell me what to add or change..."
+ placeholder={t("chat.placeholder")}
  disabled={loading}
  rows={1}
  className="flex-1 resize-none text-sm shadow-ring dark:shadow-ring-d rounded-xl px-3 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:shadow-[inset_0_0_0_2px_#818cf8] focus: disabled:opacity-50 placeholder:text-slate-400 dark:placeholder:text-slate-500 hover:shadow-[0_0_0_1px_#94a3b8] dark:hover:shadow-[0_0_0_1px_#64748b] hover:shadow-sm hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 transition-all duration-200"

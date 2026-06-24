@@ -1,4 +1,4 @@
-import { createTemplateResume, resumeSchema, type Resume } from "./resume-schema";
+import { createTemplateResume, createChineseTemplateResume, resumeSchema, type Resume } from "./resume-schema";
 
 // ── Types ──
 
@@ -23,7 +23,7 @@ export interface StorageAdapter {
   loadProject(id: string): Promise<ProjectData | null>;
   saveProject(id: string, data: ProjectData): Promise<void>;
   deleteProject(id: string): Promise<void>;
-  createProject(): Promise<{ id: string; data: ProjectData }>;
+  createProject(locale?: "en" | "zh"): Promise<{ id: string; data: ProjectData }>;
   exportAllLocalProjects(): Promise<Record<string, ProjectData>>;
 }
 
@@ -32,9 +32,9 @@ export interface StorageAdapter {
 const INDEX_KEY = "talk_forge_projects_index";
 const PROJECT_PREFIX = "talk_forge_project_";
 
-function makeTemplateData(): ProjectData {
+function makeTemplateData(locale?: "en" | "zh"): ProjectData {
   return {
-    resume: createTemplateResume(),
+    resume: locale === "zh" ? createChineseTemplateResume() : createTemplateResume(),
     conversations: [],
     sectionOrder: ["overview", "experience", "education", "skills", "projects", "certificates", "publications", "languages", "honors", "hobbies", "volunteers"],
   };
@@ -105,9 +105,9 @@ class LocalStorageAdapter implements StorageAdapter {
     await this.saveProjectsIndex(index.filter(m => m.id !== id));
   }
 
-  async createProject(): Promise<{ id: string; data: ProjectData }> {
+  async createProject(locale?: "en" | "zh"): Promise<{ id: string; data: ProjectData }> {
     const id = crypto.randomUUID();
-    const data = makeTemplateData();
+    const data = makeTemplateData(locale);
     writeLS(PROJECT_PREFIX + id, data);
     const index = await this.loadProjectsIndex();
     index.unshift({

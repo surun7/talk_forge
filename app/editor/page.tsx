@@ -9,6 +9,7 @@ import { createTemplateResume, type Resume } from "@/lib/resume-schema";
 import { getStorageAdapter } from "@/lib/storage";
 import { useProject } from "@/hooks/use-project";
 import PhotoUploadModal from "@/components/photo-upload-modal";
+import { useLocale } from "@/lib/locale-provider";
 import { FileText, MessageCircle } from "lucide-react";
 
 type EditMode = "agent" | "manual";
@@ -16,6 +17,7 @@ type EditMode = "agent" | "manual";
 const MAX_HISTORY = 50;
 
 export default function EditorPage() {
+  const { t, locale } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const idParam = searchParams.get("id");
@@ -148,9 +150,9 @@ export default function EditorPage() {
 
   const handleNewResume = useCallback(async () => {
     const storage = getStorageAdapter();
-    const { id } = await storage.createProject();
+    const { id } = await storage.createProject(locale);
     router.push("/editor?id=" + id);
-  }, [router]);
+  }, [router, locale]);
 
   const handlePhotoSave = useCallback((dataUrl: string) => {
     updateResume((prev: Resume) => ({ ...prev, basics: { ...prev.basics, photo: dataUrl } }));
@@ -181,7 +183,7 @@ export default function EditorPage() {
   }, [updateResumeDebounced]);
 
   if (isLoading || !initialized) {
-    return <div className="h-full flex items-center justify-center"><p className="text-slate-400">Loading...</p></div>;
+    return <div className="h-full flex items-center justify-center"><p className="text-slate-400">{t("editor.loading")}</p></div>;
   }
 
   const previewPanel = (
@@ -254,17 +256,18 @@ function TabBar({ mode, onModeChange, previewPanel, chatPanel }: {
   previewPanel: React.ReactNode;
   chatPanel: React.ReactNode;
 }) {
+  const { t } = useLocale();
   const [mobileTab, setMobileTab] = useState<"preview" | "chat">("preview");
   return (
     <>
       <div className="flex items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2 gap-2">
         <button onClick={() => setMobileTab("preview")}
           className={`flex items-center gap-1.5 px-4 py-1.5 text-xs rounded-lg font-medium transition-colors ${mobileTab === "preview" ? "bg-indigo-600 text-white" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}>
-          <FileText className="w-3.5 h-3.5" /> Preview
+          <FileText className="w-3.5 h-3.5" /> {t("editor.preview")}
         </button>
         <button onClick={() => setMobileTab("chat")}
           className={`flex items-center gap-1.5 px-4 py-1.5 text-xs rounded-lg font-medium transition-colors ${mobileTab === "chat" ? "bg-indigo-600 text-white" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}>
-          <MessageCircle className="w-3.5 h-3.5" /> Chat
+          <MessageCircle className="w-3.5 h-3.5" /> {t("editor.chat")}
         </button>
       </div>
       {mobileTab === "preview" ? (

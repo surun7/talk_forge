@@ -5,14 +5,14 @@ import { PanelLeftClose, PanelLeftOpen, FolderDown, FolderUp, Loader2, KeyRound 
 import ApiSettingsPanel from "./api-settings-panel";
 import { getStorageAdapter } from "@/lib/storage";
 import { resumeSchema } from "@/lib/resume-schema";
+import { useLocale } from "@/lib/locale-provider";
 
 interface Props {
   onImportComplete?: () => void;
 }
 
-const isZh = typeof navigator !== "undefined" && navigator.language.startsWith("zh");
-
 export default function DashboardSidebar({ onImportComplete }: Props) {
+  const { t } = useLocale();
   const [collapsed, setCollapsed] = useState(false);
   const [showApiSettings, setShowApiSettings] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -26,6 +26,7 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
       setStatus("");
       const storage = getStorageAdapter();
       const projects = await storage.exportAllLocalProjects();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       const index = await storage.loadProjectsIndex();
 
       for (const meta of index) {
@@ -38,16 +39,16 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
         await writable.close();
       }
       setExporting(false);
-      setStatus(isZh ? `成功导出 ${index.length} 个项目` : `Exported ${index.length} project(s)`);
+      setStatus(t("sidebar.exported", { count: String(index.length) }));
     } catch (e: any) {
       if (e.name === "AbortError" || e.name === "DOMException") {
         // user cancelled
       } else {
-        setStatus(isZh ? "导出失败：" + e.message : "Export failed: " + e.message);
+        setStatus(t("sidebar.exportFailed", { msg: e.message }));
       }
       setExporting(false);
     }
-  }, []);
+  }, [t]);
 
   const handleImport = useCallback(async () => {
     try {
@@ -76,17 +77,17 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
         imported++;
       }
       setImporting(false);
-      setStatus(isZh ? `成功导入 ${imported} 个项目` : `Imported ${imported} project(s)`);
+      setStatus(t("sidebar.imported", { count: String(imported) }));
       onImportComplete?.();
     } catch (e: any) {
       if (e.name === "AbortError" || e.name === "DOMException") {
         // user cancelled
       } else {
-        setStatus(isZh ? "导入失败：" + e.message : "Import failed: " + e.message);
+        setStatus(t("sidebar.importFailed", { msg: e.message }));
       }
       setImporting(false);
     }
-  }, [onImportComplete]);
+  }, [onImportComplete, t]);
 
   return (<>
     <div className={`flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300 flex-shrink-0 ${collapsed ? "w-12" : "w-56"}`}>
@@ -101,31 +102,31 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
       {/* Menu items */}
       <div className="flex-1 overflow-y-auto px-2 space-y-1">
         <div className={`flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium text-slate-400 uppercase tracking-wider ${collapsed ? "justify-center" : ""}`}>
-          {!collapsed && (isZh ? "数据管理" : "Data Management")}
+          {!collapsed && t("sidebar.dataManagement")}
         </div>
 
         {/* Export */}
         <button onClick={handleExport} disabled={exporting}
           className={`flex items-center gap-3 w-full rounded-lg text-sm transition-colors ${collapsed ? "justify-center px-0 py-2" : "px-3 py-2"} text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50`}
-          title={collapsed ? (isZh ? "导出简历备份" : "Export Resume Backup") : ""}>
+          title={collapsed ? t("sidebar.exportBackup") : ""}>
           {exporting ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <FolderUp className="w-4 h-4 shrink-0" />}
-          {!collapsed && <span>{isZh ? "导出简历备份" : "Export Resume Backup"}</span>}
+          {!collapsed && <span>{t("sidebar.exportBackup")}</span>}
         </button>
 
         {/* Import */}
         <button onClick={handleImport} disabled={importing}
           className={`flex items-center gap-3 w-full rounded-lg text-sm transition-colors ${collapsed ? "justify-center px-0 py-2" : "px-3 py-2"} text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50`}
-          title={collapsed ? (isZh ? "导入简历备份" : "Import Resume Backup") : ""}>
+          title={collapsed ? t("sidebar.importBackup") : ""}>
           {importing ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <FolderDown className="w-4 h-4 shrink-0" />}
-          {!collapsed && <span>{isZh ? "导入简历备份" : "Import Resume Backup"}</span>}
+          {!collapsed && <span>{t("sidebar.importBackup")}</span>}
         </button>
 
         {/* API Settings */}
         <button onClick={() => setShowApiSettings(true)}
           className={`flex items-center gap-3 w-full rounded-lg text-sm transition-colors ${collapsed ? "justify-center px-0 py-2" : "px-3 py-2"} text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800`}
-          title={collapsed ? (isZh ? "API 设置" : "API Settings") : ""}>
+          title={collapsed ? t("sidebar.apiSettings") : ""}>
           <KeyRound className="w-4 h-4 shrink-0" />
-          {!collapsed && <span>{isZh ? "API 设置" : "API Settings"}</span>}
+          {!collapsed && <span>{t("sidebar.apiSettings")}</span>}
         </button>
       </div>
 

@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { X, Plus, Trash2, Eye, EyeOff, Save, KeyRound, XCircle } from "lucide-react";
 import { reloadProviders } from "@/lib/custom-providers-store";
+import { useLocale } from "@/lib/locale-provider";
 
 interface CustomProvider {
   id: string;
@@ -33,14 +34,13 @@ function writeLS(key: string, value: string) {
   try { localStorage.setItem(key, value); } catch {}
 }
 
-const isZh = typeof navigator !== "undefined" && navigator.language.startsWith("zh");
-
 interface Props {
   open: boolean;
   onClose: () => void;
 }
 
 export default function ApiSettingsPanel({ open, onClose }: Props) {
+  const { t } = useLocale();
   const [activeProvider, setActiveProvider] = useState<string>(() => readLS("talk_forge_api_active_provider", ""));
   const [builtinKeys, setBuiltinKeys] = useState<Record<string, string>>(() =>
     Object.fromEntries(BUILTIN_KEYS.map(k => [k.id, readLS(k.envKey)]))
@@ -112,10 +112,10 @@ export default function ApiSettingsPanel({ open, onClose }: Props) {
           <div className="flex items-center gap-2">
             <KeyRound className="w-5 h-5 text-indigo-500" />
             <h2 className="text-base font-semibold text-slate-800 dark:text-slate-200">
-              {isZh ? "API 设置" : "API Settings"}
+              {t("apiSettings.title")}
             {activeProvider && (
               <span className="text-[10px] text-indigo-500 font-normal ml-2">
-                → {activeProvider === "custom" ? (isZh ? "已选择" : "Selected") : activeProvider}
+                → {activeProvider === "custom" ? t("apiSettings.selected") : activeProvider}
               </span>
             )}
             </h2>
@@ -130,7 +130,7 @@ export default function ApiSettingsPanel({ open, onClose }: Props) {
           {/* Built-in providers */}
           <div>
             <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-              {isZh ? "内置提供商" : "Built-in Providers"}
+              {t("apiSettings.builtinProviders")}
             </h3>
             <div className="space-y-3">
               {BUILTIN_KEYS.map(k => (
@@ -146,7 +146,7 @@ export default function ApiSettingsPanel({ open, onClose }: Props) {
                         type={showKeys[k.id] ? "text" : "password"}
                         value={builtinKeys[k.id] || ""}
                         onChange={e => setBuiltinKeys(prev => ({ ...prev, [k.id]: e.target.value }))}
-                        placeholder={isZh ? "API Key" : "API Key"}
+                        placeholder={t("apiSettings.apiKey")}
                         className="w-full text-xs rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:border-indigo-400"
                       />
                       <button onClick={() => toggleShowKey(k.id)}
@@ -163,7 +163,7 @@ export default function ApiSettingsPanel({ open, onClose }: Props) {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="w-4 shrink-0" />
-                    <label className="w-28 text-[10px] text-slate-400 shrink-0">{isZh ? "模型名" : "Model"}</label>
+                    <label className="w-28 text-[10px] text-slate-400 shrink-0">{t("apiSettings.model")}</label>
                     <input
                       value={builtinModels[k.id] || k.defaultModel || ""}
                       onChange={e => setBuiltinModels(prev => ({ ...prev, [k.id]: e.target.value }))}
@@ -180,11 +180,11 @@ export default function ApiSettingsPanel({ open, onClose }: Props) {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                {isZh ? "自定义提供商" : "Custom Providers"}
+                {t("apiSettings.customProviders")}
               </h3>
               <button onClick={addCustom}
                 className="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg px-2 py-1 transition-colors font-medium">
-                <Plus className="w-3 h-3" /> {isZh ? "添加" : "Add"}
+                <Plus className="w-3 h-3" /> {t("apiSettings.add")}
               </button>
             </div>
             <div className="space-y-3">
@@ -196,7 +196,7 @@ export default function ApiSettingsPanel({ open, onClose }: Props) {
                       {activeProvider === cp.id && <span className="w-2 h-2 rounded-full bg-indigo-600" />}
                     </button>
                     <input value={cp.name} onChange={e => updateCustom(cp.id, "name", e.target.value)}
-                      placeholder={isZh ? "名称 (如 Kimi)" : "Name (e.g. Kimi)"}
+                      placeholder={t("apiSettings.namePlaceholder")}
                       className="flex-1 text-xs rounded-lg px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:border-indigo-400" />
                     <button onClick={() => removeCustom(cp.id)}
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 shrink-0">
@@ -208,7 +208,7 @@ export default function ApiSettingsPanel({ open, onClose }: Props) {
                       placeholder="Base URL"
                       className="flex-1 text-xs rounded-lg px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:border-indigo-400" />
                     <input value={cp.model} onChange={e => updateCustom(cp.id, "model", e.target.value)}
-                      placeholder={isZh ? "模型名" : "Model"}
+                      placeholder={t("apiSettings.modelPlaceholder")}
                       className="flex-1 text-xs rounded-lg px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 outline-none focus:border-indigo-400" />
                   </div>
                   <div className="relative">
@@ -239,11 +239,11 @@ export default function ApiSettingsPanel({ open, onClose }: Props) {
         {/* Footer — pinned */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-700 shrink-0">
           <p className="text-[10px] text-slate-400">
-            {isZh ? "API 密钥仅存储在浏览器本地" : "API keys stored locally in your browser"}
+            {t("apiSettings.storageNote")}
           </p>
           <button onClick={handleSave}
             className="flex items-center gap-2 h-9 px-5 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200">
-            {saved ? (isZh ? "已保存 ✓" : "Saved ✓") : (<><Save className="w-3.5 h-3.5" /> {isZh ? "保存" : "Save"}</>)}
+            {saved ? t("apiSettings.saved") : (<><Save className="w-3.5 h-3.5" /> {t("apiSettings.save")}</>)}
           </button>
         </div>
       </div>

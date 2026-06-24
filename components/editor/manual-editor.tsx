@@ -5,6 +5,7 @@ import { nextId } from "@/lib/resume-schema";
 import { Plus, Star, Trash2 } from "lucide-react";
 import { SectionHeader, AnimatedSection, btnCls, inputCls, ICON_MAP, FormattedField, CollapsibleItem, Field } from "./shared";
 import { sectionComponents } from "./section-render-map";
+import { useLocale } from "@/lib/locale-provider";
 
 interface Props {
   resume: Resume; onChange: (r: Resume) => void; onOpenPhotoModal: () => void;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function ManualEditor({ resume, onChange, onOpenPhotoModal, sectionOrder, onMoveSectionUp, onMoveSectionDown, onAddCustomSection }: Props) {
+  const { t } = useLocale();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   const toggle = (k: string) => setOpenSections(s => ({ ...s, [k]: !s[k] }));
@@ -84,7 +86,7 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
         }
         return null;
       })}
-      <button onClick={() => { const id = "cs_" + nextId(); addL("customSections", { id, title: "NEW SECTION", icon: "star", description: "", items: [] }); onAddCustomSection(id); }} className={btnCls}><Plus className="w-3 h-3" />Add Section</button>
+      <button onClick={() => { const id = "cs_" + nextId(); addL("customSections", { id, title: "NEW SECTION", icon: "star", description: "", items: [] }); onAddCustomSection(id); }} className={btnCls}><Plus className="w-3 h-3" />{t("editor.addSection")}</button>
     </div>
   );
 }

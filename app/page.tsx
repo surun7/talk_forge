@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Plus, Trash2, Pencil, Check, FileText, Sun, Moon } from "lucide-react";
+import { Sparkles, Plus, Trash2, Pencil, Check, FileText, Sun, Moon, Languages } from "lucide-react";
 import { getStorageAdapter, type ProjectMeta } from "@/lib/storage";
 import DashboardSidebar from "@/components/dashboard-sidebar";
+import { useLocale } from "@/lib/locale-provider";
 
 function useTheme() {
   const [dark, setDark] = useState(false);
@@ -19,6 +20,7 @@ function useTheme() {
 
 export default function Dashboard() {
   const router = useRouter();
+  const { t, locale, setLocale } = useLocale();
   const { dark, toggle: toggleTheme } = useTheme();
   const themeBtnRef = useRef<HTMLButtonElement>(null);
   const [ripple, setRipple] = useState<{ x: number; y: number; expanding: boolean; goingDark: boolean } | null>(null);
@@ -39,7 +41,7 @@ export default function Dashboard() {
   }, []);
 
   async function handleCreate() {
-    const { id } = await storage.createProject();
+    const { id } = await storage.createProject(locale);
     router.push("/editor?id=" + id);
   }
 
@@ -87,7 +89,7 @@ export default function Dashboard() {
   }
 
   if (loading) {
-    return <div className="h-full flex items-center justify-center"><p className="text-slate-400">Loading...</p></div>;
+    return <div className="h-full flex items-center justify-center"><p className="text-slate-400">{t("dashboard.loading")}</p></div>;
   }
 
   function handleImportComplete() { loadProjects(); }
@@ -103,18 +105,25 @@ export default function Dashboard() {
           <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center">
             <Sparkles className="w-3.5 h-3.5 text-white" />
           </div>
-          <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Talk Forge</span>
+          <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{t("dashboard.title")}</span>
           <span className="text-slate-300 dark:text-slate-600 mx-1">|</span>
-          <span className="text-sm text-slate-500 dark:text-slate-400">Dashboard</span>
+          <span className="text-sm text-slate-500 dark:text-slate-400">{t("dashboard.subtitle")}</span>
           <button onClick={handleCreate}
             className="ml-4 flex items-center gap-2 h-9 px-4 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200">
-            <Plus className="w-3.5 h-3.5" /> New Resume
+            <Plus className="w-3.5 h-3.5" /> {t("dashboard.newResume")}
           </button>
         </div>
         <div className="flex items-center gap-2 ml-auto">
+          {/* Language toggle */}
+          <button onClick={() => setLocale(locale === "zh" ? "en" : "zh")}
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200"
+            title={locale === "zh" ? t("dashboard.english") : t("dashboard.chinese")}>
+            <Languages className="w-4 h-4" />
+          </button>
+          {/* Theme toggle */}
           <button ref={themeBtnRef} onClick={handleThemeToggle}
             className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200"
-            title={dark ? "Light mode" : "Dark mode"}>
+            title={dark ? t("dashboard.lightMode") : t("dashboard.darkMode")}>
             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
         </div>
@@ -128,11 +137,11 @@ export default function Dashboard() {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <FileText className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-              <p className="text-lg font-semibold text-slate-500 dark:text-slate-400 mb-2">No resumes yet</p>
-              <p className="text-sm text-slate-400 mb-6">Create your first resume to get started</p>
+              <p className="text-lg font-semibold text-slate-500 dark:text-slate-400 mb-2">{t("dashboard.emptyTitle")}</p>
+              <p className="text-sm text-slate-400 mb-6">{t("dashboard.emptyDesc")}</p>
               <button onClick={handleCreate}
                 className="inline-flex items-center gap-2 h-10 px-6 text-sm rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200">
-                <Plus className="w-4 h-4" /> Create Resume
+                <Plus className="w-4 h-4" /> {t("dashboard.createResume")}
               </button>
             </div>
           </div>
@@ -154,7 +163,7 @@ export default function Dashboard() {
                       autoFocus
                     />
                   ) : (
-                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate flex-1">{meta.name || "Untitled"}</h3>
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate flex-1">{meta.name || t("dashboard.untitled")}</h3>
                   )}
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0">
                     <button onClick={e => { e.stopPropagation(); startRename(meta); }}
@@ -195,11 +204,11 @@ export default function Dashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setDeleteId(null)}>
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
           <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 mx-4 max-w-sm w-full" onClick={e => e.stopPropagation()}>
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">Delete Resume</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">This action cannot be undone.</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1">{t("dashboard.deleteTitle")}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">{t("dashboard.deleteDesc")}</p>
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setDeleteId(null)} className="h-8 px-4 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors font-medium">Cancel</button>
-              <button onClick={() => handleDelete(deleteId)} className="h-8 px-4 text-xs rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors">Delete</button>
+              <button onClick={() => setDeleteId(null)} className="h-8 px-4 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors font-medium">{t("dashboard.cancel")}</button>
+              <button onClick={() => handleDelete(deleteId)} className="h-8 px-4 text-xs rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors">{t("dashboard.delete")}</button>
             </div>
           </div>
         </div>
