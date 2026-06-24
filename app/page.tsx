@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [renameId, setRenameId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const storage = getStorageAdapter();
 
@@ -41,8 +42,14 @@ export default function Dashboard() {
   }, []);
 
   async function handleCreate() {
-    const { id } = await storage.createProject(locale);
-    router.push("/editor?id=" + id);
+    if (creating) return;
+    setCreating(true);
+    try {
+      const { id } = await storage.createProject(locale);
+      router.push("/editor?id=" + id);
+    } finally {
+      setCreating(false);
+    }
   }
 
   async function handleDelete(id: string) {
@@ -108,8 +115,8 @@ export default function Dashboard() {
           <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{t("dashboard.title")}</span>
           <span className="text-slate-300 dark:text-slate-600 mx-1">|</span>
           <span className="text-sm text-slate-500 dark:text-slate-400">{t("dashboard.subtitle")}</span>
-          <button onClick={handleCreate}
-            className="ml-4 flex items-center gap-2 h-9 px-4 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200">
+          <button onClick={handleCreate} disabled={creating}
+            className="ml-4 flex items-center gap-2 h-9 px-4 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200 disabled:opacity-50">
             <Plus className="w-3.5 h-3.5" /> {t("dashboard.newResume")}
           </button>
         </div>

@@ -156,7 +156,10 @@ function EditorContent() {
   function moveSectionUp(key: string) { setSectionOrder((prev: string[]) => { const i = prev.indexOf(key); if (i <= 0) return prev; const n = [...prev]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; return n; }); }
   function moveSectionDown(key: string) { setSectionOrder((prev: string[]) => { const i = prev.indexOf(key); if (i < 0 || i >= prev.length - 1) return prev; const n = [...prev]; [n[i], n[i + 1]] = [n[i + 1], n[i]]; return n; }); }
 
+  const creatingRef = useRef(false);
   const handleNewResume = useCallback(async () => {
+    if (creatingRef.current) return;
+    creatingRef.current = true;
     const storage = getStorageAdapter();
     const { id } = await storage.createProject(locale);
     router.push("/editor?id=" + id);
