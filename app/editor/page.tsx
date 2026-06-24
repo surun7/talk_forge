@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { Suspense, useState, useRef, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ResumePreview from "@/components/resume-preview";
 import ChatPanel from "@/components/chat-panel";
@@ -17,6 +17,14 @@ type EditMode = "agent" | "manual";
 const MAX_HISTORY = 50;
 
 export default function EditorPage() {
+  return (
+    <Suspense fallback={<div className="h-full flex items-center justify-center"><p className="text-slate-400">Loading...</p></div>}>
+      <EditorContent />
+    </Suspense>
+  );
+}
+
+function EditorContent() {
   const { t, locale } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
