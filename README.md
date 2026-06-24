@@ -1,5 +1,11 @@
 # Talk Forge
 
+<p align="center">
+  <a href="https://www.talkforge.cc" target="_blank"><strong>🌐 www.talkforge.cc</strong></a>
+  <br />
+  <sub>Try it online — no install required.</sub>
+</p>
+
 A **pluggable AI-powered resume builder framework** with real-time A4 preview and pixel-perfect PDF export. Connect any OpenAI-compatible model or use it entirely offline as a standalone resume editor.
 
 ## Tech Stack
