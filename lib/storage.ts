@@ -1,6 +1,20 @@
 import { createTemplateResume, createChineseTemplateResume, resumeSchema, type Resume } from "./resume-schema";
+import { z as Zod } from "zod";
 
 // ── Types ──
+
+export interface Message {
+  role: "user" | "assistant";
+  content: string;
+  time: number;
+}
+
+export interface Conversation {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: number;
+}
 
 export interface ProjectMeta {
   id: string;
@@ -13,7 +27,7 @@ export interface ProjectMeta {
 
 export interface ProjectData {
   resume: Resume;
-  conversations: any[];  // Conversation[]
+  conversations: Conversation[];
   sectionOrder: string[];
 }
 
@@ -40,20 +54,33 @@ function makeTemplateData(locale?: "en" | "zh"): ProjectData {
   };
 }
 
-function readLS<T>(key: string, fallback: T): T {
+function readLS<T>(key: string, fallback: T, schema?: Zod.ZodType<T>): T {
+  if (typeof localStorage === "undefined") return fallback;
   try {
     const raw = localStorage.getItem(key);
-    if (raw) return JSON.parse(raw) as T;
-  } catch {}
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    if (schema) {
+      const result = schema.safeParse(parsed);
+      return result.success ? result.data : fallback;
+    }
+    return parsed as T;
+  } catch (e) {
+    console.error(`[storage] Failed to read localStorage key "${key}":`, e);
+  }
   return fallback;
 }
 
 function writeLS(key: string, value: unknown) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+  if (typeof localStorage === "undefined") return;
+  try { localStorage.setItem(key, JSON.stringify(value)); }
+  catch (e) { console.error(`[storage] Failed to write localStorage key "${key}":`, e); }
 }
 
 function deleteLS(key: string) {
-  try { localStorage.removeItem(key); } catch {}
+  if (typeof localStorage === "undefined") return;
+  try { localStorage.removeItem(key); }
+  catch (e) { console.error(`[storage] Failed to delete localStorage key "${key}":`, e); }
 }
 
 class LocalStorageAdapter implements StorageAdapter {
@@ -66,11 +93,8 @@ class LocalStorageAdapter implements StorageAdapter {
   }
 
   async loadProject(id: string): Promise<ProjectData | null> {
-    const raw = localStorage.getItem(PROJECT_PREFIX + id);
-    console.log("[LOAD] raw exists:", !!raw, "projectId:", id);
     const data = readLS<ProjectData | null>(PROJECT_PREFIX + id, null);
     if (data) {
-      console.log("[LOAD] parsed conversations count:", data.conversations?.length, "firstConvMessages:", data.conversations?.[0]?.messages?.length);
       const parsed = resumeSchema.safeParse(data.resume);
       if (!parsed.success) return null;
       data.resume = parsed.data;
@@ -79,14 +103,7 @@ class LocalStorageAdapter implements StorageAdapter {
   }
 
   async saveProject(id: string, data: ProjectData): Promise<void> {
-    console.log("[SAVE] projectId:", id, "conversations count:", data.conversations?.length, "firstConvMessages:", data.conversations?.[0]?.messages?.length);
     writeLS(PROJECT_PREFIX + id, data);
-    // Verify save
-    try {
-      const verify = localStorage.getItem(PROJECT_PREFIX + id);
-      const parsed = JSON.parse(verify || "{}");
-      console.log("[SAVE VERIFY] conversations:", parsed.conversations?.length);
-    } catch (e) { console.error("[SAVE FAILED]", e); }
     // Update index meta
     const index = await this.loadProjectsIndex();
     const meta = index.find(m => m.id === id);
@@ -140,11 +157,13 @@ let _migrated = false;
 
 function migrateLegacyData(adapter: StorageAdapter) {
   try {
-    const oldResume = readLS<any | null>("talk_forge_resume", null);
-    const oldConversations = readLS<any[] | null>("talk_forge_conversations", null);
+    const oldResume = readLS<Record<string, unknown> | null>("talk_forge_resume", null);
+    const oldConversations = readLS<Conversation[] | null>("talk_forge_conversations", null);
     if (!oldResume && !oldConversations) return;
     // Create a new project from old data
-    const resume = oldResume && resumeSchema.safeParse(oldResume).success ? oldResume : createTemplateResume();
+    const resume = oldResume && resumeSchema.safeParse(oldResume).success
+      ? (oldResume as Resume)
+      : createTemplateResume();
     const data: ProjectData = {
       resume,
       conversations: oldConversations || [],
@@ -164,7 +183,9 @@ function migrateLegacyData(adapter: StorageAdapter) {
     writeLS(INDEX_KEY, index);
     deleteLS("talk_forge_resume");
     deleteLS("talk_forge_conversations");
-  } catch {}
+  } catch (e) {
+    console.error("[storage] Legacy data migration failed:", e);
+  }
 }
 
 export function getStorageAdapter(): StorageAdapter {

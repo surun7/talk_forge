@@ -221,9 +221,9 @@ function ResumeContent({
     customSections,
   } = resume;
   const hasLinks = basics.links.length > 0;
-  const a = ACCENT_HEX[basics.accentColor] || ACCENT_HEX.indigo;
-  const al = ACCENT_LIGHT[basics.accentColor] || ACCENT_LIGHT.indigo;
-  const ab = ACCENT_BORDER[basics.accentColor] || ACCENT_BORDER.indigo;
+  const a = ACCENT_HEX[basics.accentColor] ?? ACCENT_HEX.indigo!;
+  const al = ACCENT_LIGHT[basics.accentColor] ?? ACCENT_LIGHT.indigo!;
+  const ab = ACCENT_BORDER[basics.accentColor] ?? ACCENT_BORDER.indigo!;
   const accentCSS = `[data-a] .a-icon{color:${a}}[data-a] .a-link{color:${a}}[data-a] .a-bullet{color:${a}}[data-a] .a-border{border-color:${al}}[data-a] .a-tag{background:${al};color:${a}}[data-a] .a-photo{background:${al}}[data-a] .a-photo-icon{color:${ab}}`;
   const previewSectionMap: Record<string, React.ReactNode> = {
     overview: (
@@ -777,7 +777,8 @@ function collectBlocks(container: Element): HTMLElement[] {
           subEl.children.length > 0
         ) {
           const kids = Array.from(subEl.children);
-          if (kids.every((k) => k.tagName === kids[0].tagName)) {
+          const first = kids[0];
+          if (first && kids.every((k) => k.tagName === first.tagName)) {
             for (const item of kids) out.push(item as HTMLElement);
           } else {
             out.push(subEl);
@@ -813,24 +814,24 @@ function computeOffsets(
   const offsets: number[] = [0];
   let groupStart = 0;
   for (let i = 0; i < blocks.length; i++) {
-    const h = endsPx[i] - startsPx[i];
-    const pageOrigin = offsets[offsets.length - 1];
-    if (endsPx[i] <= pageOrigin + contentHPx - 5) continue;
+    const h = (endsPx[i] ?? 0) - (startsPx[i] ?? 0);
+    const pageOrigin = offsets[offsets.length - 1] ?? 0;
+    if ((endsPx[i] ?? 0) <= pageOrigin + contentHPx - 5) continue;
     if (h > contentHPx) {
-      if (i > groupStart) offsets.push(startsPx[groupStart]);
-      let pos = startsPx[i] + contentHPx;
-      while (pos < endsPx[i]) {
+      if (i > groupStart) offsets.push(startsPx[groupStart] ?? 0);
+      let pos = (startsPx[i] ?? 0) + contentHPx;
+      while (pos < (endsPx[i] ?? 0)) {
         offsets.push(pos);
         pos += contentHPx;
       }
       groupStart = i + 1;
     } else {
-      offsets.push(startsPx[i]);
+      offsets.push(startsPx[i] ?? 0);
       groupStart = i;
     }
   }
   return offsets.map((off, i) => {
-    const nextOff = i + 1 < offsets.length ? offsets[i + 1] : Infinity;
+    const nextOff = i + 1 < offsets.length ? (offsets[i + 1] ?? Infinity) : Infinity;
     return { offsetPx: off, clipHeightPx: Math.min(contentHPx, nextOff - off) };
   });
 }

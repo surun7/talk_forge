@@ -254,7 +254,7 @@ export function FormattedField({ label, value, onChange }: { label: string; valu
       const re = new RegExp(`<${type}>([\\s\\S]*?)</${type}>`, "i");
       const m = re.exec(editor.innerHTML);
       if (m) {
-        const lis = m[1].match(/<li>([\s\S]*?)<\/li>/gi) || [];
+        const lis = m[1]!.match(/<li>([\s\S]*?)<\/li>/gi) || [];
         const divs = lis.map(li => {
           const inner = li.replace(/^<li>/i, "").replace(/<\/li>$/i, "");
           return `<div data-temp-list="1">${inner || "<br>"}</div>`;

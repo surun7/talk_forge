@@ -31,14 +31,11 @@ export function useResumePDF({ fileName }: UseResumePDFOptions = {}) {
       const raw = document.querySelectorAll<HTMLElement>(
         '[data-page-index]'
       );
-      console.log("匹配到元素数:", raw.length);
 
       const pages = Array.from(raw).filter((p) => {
         const h = p.getBoundingClientRect().height;
-        console.log("元素高度:", h);
         return h > 700;
       });
-      console.log("过滤后页数:", pages.length);
 
       const total = pages.length;
       if (total === 0) {
@@ -69,10 +66,9 @@ export function useResumePDF({ fileName }: UseResumePDFOptions = {}) {
       for (let i = 0; i < total; i++) {
         if (abortRef.current) break;
 
-        console.log("当前索引:", i, "元素高度:", pages[i].getBoundingClientRect().height);
         await new Promise((r) => setTimeout(r, 50));
 
-        const canvas = await html2canvas(pages[i], {
+        const canvas = await html2canvas(pages[i]!, {
           scale: 3,
           useCORS: true,
           allowTaint: true,

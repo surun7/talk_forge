@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Resume } from "@/lib/resume-schema";
+import type { Conversation, Message } from "@/lib/storage";
+import { streamChat } from "@/lib/client-chat";
 import ManualEditor from "./editor/manual-editor";
 import { useLocale } from "@/lib/locale-provider";
 import {
@@ -15,19 +17,6 @@ import {
  Pencil,
  Check,
 } from "lucide-react";
-
-interface Message {
- role: "user" | "assistant";
- content: string;
- time: number;
-}
-
-interface Conversation {
- id: string;
- title: string;
- messages: Message[];
- createdAt: number;
-}
 
 interface ChatPanelProps {
  resume: Resume;
@@ -150,7 +139,8 @@ export default function ChatPanel({
  useEffect(() => {
  if (externalConversations && externalConversations.length > 0) {
  setConversationsInternal(externalConversations);
- setActiveId(externalConversations[0].id);
+ const first = externalConversations[0];
+ if (first) setActiveId(first.id);
  } else {
  try {
  const raw = localStorage.getItem("talk_forge_conversations");
@@ -158,7 +148,8 @@ export default function ChatPanel({
  const parsed = JSON.parse(raw);
  if (Array.isArray(parsed) && parsed.length > 0) {
  setConversationsInternal(parsed as Conversation[]);
- setActiveId(parsed[0].id);
+ const first = parsed[0];
+ if (first) setActiveId(first.id);
  }
  }
  } catch {}
@@ -274,9 +265,10 @@ export default function ChatPanel({
  nextId = fresh.id;
  return [fresh];
  }
- if (id === activeId) {
- nextId = filtered[0].id;
- }
+	if (id === activeId) {
+	 const first = filtered[0];
+	 if (first) nextId = first.id;
+	 }
  return filtered;
  });
  if (nextId) {
@@ -299,117 +291,47 @@ export default function ChatPanel({
  setAgentStatus("thinking");
 
  try {
- const res = await fetch("/api/chat", {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({
+ let assistantContent = "";
+ let resumeUpdated = false;
+
+ for await (const event of streamChat({
  messages: [...currentMessages, userMsg].map((m) => ({
  role: m.role,
  content: m.content,
  })),
  resume,
-          sectionOrder,
-          providerConfig: (() => {
-            try {
-              const activeId = localStorage.getItem("talk_forge_api_active_provider");
-              if (!activeId) return undefined;
-              const DEFAULT_URLS: Record<string,string> = {kimi:"https://api.moonshot.cn/v1",minimax:"https://api.minimax.chat/v1",glm:"https://open.bigmodel.cn/api/paas/v4",deepseek:"https://api.deepseek.com/v1",mimo:"https://api.xiaomimimo.com/v1"};
-              const key = localStorage.getItem("talk_forge_api_" + activeId);
-              if (key) { const model = localStorage.getItem("talk_forge_api_" + activeId + "_model") || ""; return { id: activeId, name: activeId, apiKey: key, baseURL: DEFAULT_URLS[activeId] || "", model }; }
-              const custom = localStorage.getItem("talk_forge_api_custom");
-              if (custom) { const arr = JSON.parse(custom); return arr.find((p: any) => p.id === activeId); }
-            } catch {}
-            return undefined;
-          })(),
- }),
- });
-
- if (!res.ok) {
- let errMsg = `HTTP ${res.status}`;
- try {
- const err = await res.json();
- errMsg = err.error || err.message || errMsg;
- } catch {}
- addMessage(convId, {
- role: "assistant",
- content: t("chat.error", { msg: errMsg }),
- time: Date.now(),
- });
- setLoading(false);
- setAgentStatus("idle");
- return;
- }
-
- const reader = res.body!.getReader();
- const decoder = new TextDecoder();
- let assistantContent = "";
- let resumeUpdated = false;
- let buffer = "";
-
- while (true) {
- const { done, value } = await reader.read();
- if (done) break;
- buffer += decoder.decode(value, { stream: true });
- const lines = buffer.split("\n");
- buffer = lines.pop() || "";
- for (const line of lines) {
- if (!line.trim()) continue;
- try {
- const data = JSON.parse(line);
- if (data.type === "error") {
+ sectionOrder,
+ })) {
+ if (event.type === "error") {
  setStreamingText("");
  addMessage(convId, {
  role: "assistant",
- content: `Error: ${data.error}`,
+ content: `Error: ${event.error}`,
  time: Date.now(),
  });
  setLoading(false);
  setAgentStatus("idle");
  return;
- } else if (data.type === "tooling") {
+ } else if (event.type === "tooling") {
  setAgentStatus("editing");
- } else if (data.type === "text") {
+ } else if (event.type === "text") {
  if (!assistantContent) setAgentStatus("editing");
- assistantContent += data.text;
+ assistantContent += event.text;
  setStreamingText(assistantContent);
- } else if (data.type === "resume") {
+ } else if (event.type === "resume") {
  resumeUpdated = true;
  setAgentStatus("done");
- onResumeUpdate(data.resume);
-              if (data.sectionOrder && (window as any).__talkForgeSetSectionOrder) {
-                (window as any).__talkForgeSetSectionOrder(data.sectionOrder);
-              }
- }
- } catch (e) {
- console.error(
- "[chat] Parse error:",
- e,
- "line:",
- line.slice(0, 100),
- );
+ onResumeUpdate(event.resume as Resume);
+ if (event.sectionOrder && (window as any).__talkForgeSetSectionOrder) {
+ (window as any).__talkForgeSetSectionOrder(event.sectionOrder);
  }
  }
  }
- // Process remaining buffer
- if (buffer.trim()) {
- try {
- const data = JSON.parse(buffer);
- if (data.type === "resume") {
- resumeUpdated = true;
- setAgentStatus("done");
- onResumeUpdate(data.resume);
-              if (data.sectionOrder && (window as any).__talkForgeSetSectionOrder) {
-                (window as any).__talkForgeSetSectionOrder(data.sectionOrder);
-              }
- }
- } catch (e) {
- console.error("[chat] Final parse error:", e);
- }
- }
+
  setStreamingText("");
  const fallback = resumeUpdated
  ? "Resume updated."
- : "No response received — check server logs.";
+ : "No response received — check your API settings.";
  addMessage(convId, {
  role: "assistant",
  content: assistantContent || fallback,

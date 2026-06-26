@@ -41,7 +41,10 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
     const arr = [...resume.customSections];
     const target = idx + dir;
     if (target < 0 || target >= arr.length) return;
-    [arr[idx], arr[target]] = [arr[target], arr[idx]];
+    const a = arr[idx]!;
+    const b = arr[target]!;
+    arr[idx] = b;
+    arr[target] = a;
     onChange({ ...resume, customSections: arr });
   }
 
@@ -50,7 +53,7 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
   return (
     <div className="flex-1 overflow-y-auto p-3 space-y-1 bg-gradient-to-b from-white dark:from-slate-900 to-slate-50 dark:to-slate-800/20">
       {/* Basics always first, no move */}
-      {React.createElement(sectionComponents.basics, { ...commonProps, onOpenPhotoModal, key: "basics" })}
+      {sectionComponents.basics && React.createElement(sectionComponents.basics, { ...commonProps, onOpenPhotoModal, key: "basics" })}
       {/* Dynamic sections (including custom sections) */}
       {sectionOrder.map(key => {
         const Comp = sectionComponents[key];

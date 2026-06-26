@@ -16,7 +16,7 @@ interface Props {
 
 export default function EducationSection({ resume, onChange, openSections, toggle, visible, togVis, sectionTitle, sectionIconEl, sLabel, sIcon, sIconSet, onMoveUp, onMoveDown, isFirst, isLast }: Props) {
   const { t } = useLocale();
-  function moveItem(idx: number, dir: number) { const arr = [...resume.education]; const target = idx + dir; if (target < 0 || target >= arr.length) return; [arr[idx], arr[target]] = [arr[target], arr[idx]]; onChange({ ...resume, education: arr }); }
+  function moveItem(idx: number, dir: number) { const arr = [...resume.education]; const target = idx + dir; if (target < 0 || target >= arr.length) return; const a = arr[idx]!, b = arr[target]!; arr[idx] = b; arr[target] = a; onChange({ ...resume, education: arr }); }
   return (<>
     <SectionHeader title={sectionTitle("education", "EDUCATION")} count={resume.education.length} icon={sectionIconEl("education", "graduation-cap")} open={!!openSections.education} onToggle={() => toggle("education")}
       visible={visible("education")} onToggleVisibility={() => togVis("education")} sectionKey="education" onTitleChange={sLabel} iconKey={sIcon("education","graduation-cap")} onIconChange={k => sIconSet("education",k)}

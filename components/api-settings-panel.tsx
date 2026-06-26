@@ -14,9 +14,9 @@ interface CustomProvider {
 }
 
 const BUILTIN_KEYS = [
-  { id: "openai", label: "OpenAI", envKey: "talk_forge_api_openai", defaultModel: "gpt-4.1" },
-  { id: "anthropic", label: "Anthropic", envKey: "talk_forge_api_anthropic", defaultModel: "claude-opus-4-20250514" },
-  { id: "google", label: "Google Gemini", envKey: "talk_forge_api_google", defaultModel: "gemini-2.5-pro" },
+  { id: "openai", label: "OpenAI", envKey: "talk_forge_api_openai", defaultModel: "gpt-5.4-pro-thinking" },
+  { id: "anthropic", label: "Anthropic", envKey: "talk_forge_api_anthropic", defaultModel: "claude-sonnet-4.6" },
+  { id: "google", label: "Google Gemini", envKey: "talk_forge_api_google", defaultModel: "gemini-3.1-pro" },
   { id: "kimi", label: "Kimi (Moonshot)", envKey: "talk_forge_api_kimi", defaultBaseURL: "https://api.moonshot.cn/v1", defaultModel: "kimi-k2.6" },
   { id: "minimax", label: "MiniMax", envKey: "talk_forge_api_minimax", defaultBaseURL: "https://api.minimax.chat/v1", defaultModel: "minimax-m3" },
   { id: "glm", label: "Zhipu GLM", envKey: "talk_forge_api_glm", defaultBaseURL: "https://open.bigmodel.cn/api/paas/v4", defaultModel: "glm-5.2" },

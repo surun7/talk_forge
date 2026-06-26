@@ -1,11 +1,32 @@
 import { tool } from "ai";
 import { z } from "zod";
-import type { Resume } from "./resume-schema";
+import type {
+  Resume, ExperienceItem, EducationItem, SkillCategory, ProjectItem,
+  CertificateItem, PublicationItem, LanguageItem, HonorItem, HobbyItem,
+  VolunteerItem, CustomSection, SkillItem,
+} from "./resume-schema";
 import { nextId } from "./resume-schema";
+import { safeUrl, sanitizeHtml } from "./sanitize";
 
-type ResumeStore = { current: Resume };
+export type ResumeStore = { current: Resume };
 
-// ---------- Section Utilities ----------
+/** Sections whose items have an `id` field and can be reordered. */
+type ReorderableSectionKey =
+  | "experience" | "education" | "skills" | "projects" | "certificates"
+  | "publications" | "languages" | "honors" | "hobbies" | "volunteers" | "customSections";
+
+type ReorderableItem =
+  | ExperienceItem | EducationItem | SkillCategory | ProjectItem
+  | CertificateItem | PublicationItem | LanguageItem | HonorItem | HobbyItem
+  | VolunteerItem | CustomSection;
+
+function getSectionArray(resume: Resume, key: ReorderableSectionKey): ReorderableItem[] {
+  return resume[key] as ReorderableItem[];
+}
+
+function setSectionArray(resume: Resume, key: ReorderableSectionKey, items: ReorderableItem[]): void {
+  (resume as Record<string, unknown>)[key] = items;
+}
 
 export function makeRenameSection(store: ResumeStore) {
   return tool({
@@ -55,7 +76,7 @@ export function makeUpdateBasics(store: ResumeStore) {
       if (args.phone !== undefined) store.current.basics.phone = args.phone;
       if (args.location !== undefined) store.current.basics.location = args.location;
       if (args.birth !== undefined) store.current.basics.birth = args.birth;
-      if (args.summary !== undefined) store.current.basics.summary = args.summary;
+      if (args.summary !== undefined) store.current.basics.summary = sanitizeHtml(args.summary);
       if (args.sectionLabels !== undefined) store.current.basics.sectionLabels = { ...store.current.basics.sectionLabels, ...args.sectionLabels };
       if (args.hiddenSections !== undefined) store.current.basics.hiddenSections = args.hiddenSections;
       if (args.font !== undefined) store.current.basics.font = args.font;
@@ -82,7 +103,8 @@ export function makeUpdatePhoto(store: ResumeStore) {
       url: z.string(),
     }),
     execute: async (args) => {
-      store.current.basics.photo = args.url;
+      const sanitizedUrl = args.url ? safeUrl(args.url) : "";
+      store.current.basics.photo = sanitizedUrl === "#" ? "" : sanitizedUrl;
       return args.url ? "Photo updated." : "Photo removed.";
     },
   });
@@ -96,7 +118,8 @@ export function makeAddLink(store: ResumeStore) {
       url: z.string().url(),
     }),
     execute: async (args) => {
-      store.current.basics.links.push({ label: args.label, url: args.url });
+      const sanitizedUrl = safeUrl(args.url);
+      store.current.basics.links.push({ label: args.label, url: sanitizedUrl });
       return `Link "${args.label}" added.`;
     },
   });
@@ -141,8 +164,8 @@ export function makeAddExperience(store: ResumeStore) {
         url: args.url ?? "",
         startDate: args.startDate,
         endDate: args.endDate ?? "",
-        description: args.description ?? "",
-        highlights: args.highlights ?? [],
+        description: sanitizeHtml(args.description ?? ""),
+        highlights: (args.highlights ?? []).map(h => sanitizeHtml(h)),
       });
       return `Experience at ${args.company} added.`;
     },
@@ -828,14 +851,15 @@ export function makeReorderSubItems(store: ResumeStore) {
     }),
     execute: async (args) => {
       const [section, field] = args.sectionField.split(":") as [string, string];
-      const arr = (store.current as any)[section] as any[];
-      if (!arr) return `Section "${section}" not found.`;
-      const parent = arr.find((p: any) => p.id === args.parentItemId);
+      const sectionKey = section as ReorderableSectionKey;
+      const arr = getSectionArray(store.current, sectionKey);
+      const parent = arr.find((p) => p.id === args.parentItemId);
       if (!parent) return `Parent item ${args.parentItemId} not found in ${section}.`;
 
       if (field === "highlights" || field === "technologies") {
         // These are string arrays — reorder by value
-        const oldList: string[] = parent[field] || [];
+        const parentRecord = parent as Record<string, unknown>;
+        const oldList: string[] = (parentRecord[field] as string[]) || [];
         const seen = new Set<string>();
         const reordered: string[] = [];
         for (const v of args.values) {
@@ -846,13 +870,14 @@ export function makeReorderSubItems(store: ResumeStore) {
         for (const v of oldList) {
           if (!seen.has(v)) reordered.push(v);
         }
-        parent[field] = reordered;
+        parentRecord[field] = reordered;
       } else if (field === "skills") {
         // Skills are {id, name} objects — reorder by name
-        const oldList: { id: string; name: string }[] = parent[field] || [];
-        const nameMap = new Map(oldList.map((s: any) => [s.name, s]));
+        const parentRecord = parent as Record<string, unknown>;
+        const oldList: SkillItem[] = (parentRecord[field] as SkillItem[]) || [];
+        const nameMap = new Map(oldList.map((s) => [s.name, s]));
         const seen = new Set<string>();
-        const reordered: typeof oldList = [];
+        const reordered: SkillItem[] = [];
         for (const name of args.values) {
           if (seen.has(name)) continue;
           seen.add(name);
@@ -862,7 +887,7 @@ export function makeReorderSubItems(store: ResumeStore) {
         for (const sk of oldList) {
           if (!seen.has(sk.name)) reordered.push(sk);
         }
-        parent[field] = reordered;
+        parentRecord[field] = reordered;
       }
       return `Reordered ${args.sectionField} for parent ${args.parentItemId}.`;
     },
@@ -878,23 +903,24 @@ export function makeReorderSectionItems(store: ResumeStore) {
       ids: z.array(z.string()),
     }),
     execute: async (args) => {
-      const arr = store.current[args.section] as any[];
+      const sectionKey = args.section as ReorderableSectionKey;
+      const arr = getSectionArray(store.current, sectionKey);
       if (!arr) return `Section "${args.section}" not found.`;
-      const idIndex = new Map(arr.map((item: any, i: number) => [item.id, i]));
+      const idIndex = new Map(arr.map((item, i) => [item.id, i]));
       const seen = new Set<string>();
-      const reordered: any[] = [];
+      const reordered: ReorderableItem[] = [];
       for (const id of args.ids) {
         if (seen.has(id)) continue;
         seen.add(id);
         const idx = idIndex.get(id);
         if (idx === undefined) continue;
-        reordered.push(arr[idx]);
+        reordered.push(arr[idx]!);
       }
       // Append any items not in the provided IDs (keep their order)
       for (const item of arr) {
         if (!seen.has(item.id)) reordered.push(item);
       }
-      (store.current as any)[args.section] = reordered;
+      setSectionArray(store.current, sectionKey, reordered);
       return `Reordered ${args.section} (${reordered.length} items).`;
     },
   });

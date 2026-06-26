@@ -13,12 +13,12 @@ export const BUILTIN_LABELS: Record<string, string> = {
   groq: "Groq (Llama 3)",
 };
 
-const MODEL_IDS: Record<string, string> = {
+const MODEL_IDS = {
   openai: "gpt-4o",
   anthropic: "claude-sonnet-4-6",
   google: "gemini-2.0-flash",
   groq: "llama-3.3-70b-versatile",
-};
+} as const;
 
 export interface CustomProviderConfig {
   id: string;
@@ -28,42 +28,77 @@ export interface CustomProviderConfig {
   model: string;
 }
 
+/**
+ * Create a patched fetch that injects `reasoning_content: ""` into assistant
+ * tool-call messages when targeting Kimi (Moonshot) API endpoints.
+ *
+ * Kimi requires reasoning_content in assistant tool-call messages when thinking
+ * is enabled. The AI SDK doesn't preserve reasoning_content across turns, causing:
+ * "thinking is enabled but reasoning_content is missing in assistant tool call
+ * message at index N". This patch fixes that.
+ *
+ * Safe to use in both browser and Node.js — only wraps globalThis.fetch.
+ *
+ * @param baseFetch - The underlying fetch to wrap (defaults to globalThis.fetch)
+ */
+export function createPatchedFetch(baseFetch: typeof globalThis.fetch = globalThis.fetch): typeof globalThis.fetch {
+  return async (url, init) => {
+    // Only patch requests to Kimi (Moonshot) API endpoints
+    const urlStr = typeof url === "string" ? url : url instanceof URL ? url.href : String(url);
+    const isKimiEndpoint = urlStr.includes("api.moonshot.cn") || urlStr.includes("moonshot");
+    if (isKimiEndpoint && init?.body && typeof init.body === "string") {
+      try {
+        const body = JSON.parse(init.body);
+        if (body.messages && Array.isArray(body.messages)) {
+          body.messages = body.messages.map((msg: Record<string, unknown>) => {
+            if (
+              msg.role === "assistant" &&
+              msg.tool_calls &&
+              !("reasoning_content" in msg)
+            ) {
+              return { ...msg, reasoning_content: "" };
+            }
+            return msg;
+          });
+        }
+        init = { ...init, body: JSON.stringify(body) };
+      } catch {
+        // body isn't JSON or doesn't have messages — leave it alone
+      }
+    }
+    return baseFetch(url, init);
+  };
+}
+
+/**
+ * Create a LanguageModel for a custom OpenAI-compatible provider.
+ * Works in both browser and server — does NOT read process.env.
+ *
+ * @param config - Provider config with apiKey, baseURL, model
+ * @param customFetch - Optional custom fetch (e.g. proxy fetch for CORS bypass)
+ */
+export function createCustomModel(
+  config: CustomProviderConfig,
+  customFetch?: typeof globalThis.fetch,
+): LanguageModel {
+  const fetchFn = customFetch
+    ? createPatchedFetch(customFetch)
+    : createPatchedFetch();
+
+  return createOpenAI({
+    apiKey: config.apiKey,
+    baseURL: config.baseURL,
+    fetch: fetchFn,
+  }).chat(config.model);
+}
+
+/**
+ * Server-side model creation — reads API keys from environment variables.
+ * Only works in Node.js (route handlers), not in the browser.
+ */
 export function getModel(provider: ProviderId, custom?: CustomProviderConfig): LanguageModel | null {
   if (provider === "custom" && custom) {
-    // Kimi API requires reasoning_content in assistant tool-call messages when
-    // thinking is enabled. The AI SDK doesn't preserve reasoning_content across
-    // turns, causing: "thinking is enabled but reasoning_content is missing in
-    // assistant tool call message at index N". Fix: patch messages on the way out.
-    const baseFetch = globalThis.fetch;
-    const patchedFetch: typeof globalThis.fetch = async (url, init) => {
-      if (init?.body && typeof init.body === "string") {
-        try {
-          const body = JSON.parse(init.body);
-          if (body.messages && Array.isArray(body.messages)) {
-            body.messages = body.messages.map((msg: Record<string, unknown>) => {
-              if (
-                msg.role === "assistant" &&
-                msg.tool_calls &&
-                !("reasoning_content" in msg)
-              ) {
-                return { ...msg, reasoning_content: "" };
-              }
-              return msg;
-            });
-          }
-          init = { ...init, body: JSON.stringify(body) };
-        } catch {
-          // body isn't JSON or doesn't have messages — leave it alone
-        }
-      }
-      return baseFetch(url, init);
-    };
-
-    return createOpenAI({
-      apiKey: custom.apiKey,
-      baseURL: custom.baseURL,
-      fetch: patchedFetch,
-    }).chat(custom.model);
+    return createCustomModel(custom);
   }
 
   switch (provider) {

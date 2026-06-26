@@ -20,7 +20,7 @@ export default function ExperienceSection({ resume, onChange, openSections, togg
     const arr = [...resume.experience];
     const target = idx + dir;
     if (target < 0 || target >= arr.length) return;
-    [arr[idx], arr[target]] = [arr[target], arr[idx]];
+    const a = arr[idx]!, b = arr[target]!; arr[idx] = b; arr[target] = a;
     onChange({ ...resume, experience: arr });
   }
   const setOpenItems = (id: string) => {

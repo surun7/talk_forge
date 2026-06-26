@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { Resume } from "@/lib/resume-schema";
-import { getStorageAdapter } from "@/lib/storage";
+import { getStorageAdapter, type Conversation } from "@/lib/storage";
 
 export function useProject(projectId: string | null) {
   const [resume, setResume] = useState<Resume | null>(null);
-  const [conversations, setConversations] = useState<any[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [sectionOrder, setSectionOrder] = useState<string[]>([
     "overview", "experience", "education", "skills", "projects",
     "certificates", "publications", "languages", "honors", "hobbies", "volunteers",
@@ -21,9 +21,7 @@ export function useProject(projectId: string | null) {
   useEffect(() => {
     if (!projectId) { setIsLoading(false); return; }
     (async () => {
-      console.log("[EDITOR INIT] loading project:", projectId);
       const data = await storage.loadProject(projectId);
-      console.log("[EDITOR LOADED] data exists:", !!data, "conversations:", data?.conversations?.length);
       if (data) {
         setResume(data.resume);
         setConversations(data.conversations);
@@ -43,7 +41,6 @@ export function useProject(projectId: string | null) {
       const c = conversationsRef.current;
       const s = sectionOrderRef.current;
       if (!r) return;
-      console.log("[AUTOSAVE EXEC] saving conversations:", c?.length);
       storage.saveProject(projectId, { resume: r, conversations: c, sectionOrder: s });
       setProjectName(r.basics.name || "");
     }, 800);
@@ -58,7 +55,7 @@ export function useProject(projectId: string | null) {
   // Auto-save on data changes (save even if conversations is empty)
   useEffect(() => { if (resume && !isLoading) debouncedSave(); }, [resume, debouncedSave, isLoading]);
   useEffect(() => {
-    if (!isLoading) { console.log("[AUTOSAVE TRIGGER] projectId:", projectId, "conversations count:", conversations?.length, "firstMsg:", conversations?.[0]?.messages?.[0]?.content?.slice(0, 20)); debouncedSave(); }
+    if (!isLoading) debouncedSave();
   }, [conversations, debouncedSave, isLoading]);
   useEffect(() => { if (!isLoading) debouncedSave(); }, [sectionOrder, debouncedSave, isLoading]);
 
@@ -73,8 +70,7 @@ export function useProject(projectId: string | null) {
       try {
         const key = "talk_forge_project_" + projectId;
         localStorage.setItem(key, JSON.stringify({ resume: r, conversations: c, sectionOrder: s }));
-        console.log("[UNLOAD SAVE] conversations:", c?.length);
-      } catch { console.error("[UNLOAD SAVE FAILED]"); }
+      } catch { /* storage full or unavailable */ }
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);

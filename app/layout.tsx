@@ -47,13 +47,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="h-full font-sans antialiased">
+      <body className="h-full font-sans antialiased bg-white dark:bg-slate-900">
         <LocaleProvider>
           <div className="h-full flex flex-col">
             <div className="flex-1 min-h-0">
               {children}
             </div>
-            <footer className="flex-shrink-0 flex items-center justify-center h-8 text-[10px] text-slate-400 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800 print:hidden">
+            <footer className="flex-shrink-0 flex items-center justify-center h-8 text-[10px] text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 print:hidden">
               <a href="https://github.com/surun7/talk_forge" target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                 <svg viewBox="0 0 16 16" className="w-3 h-3 fill-current" aria-hidden="true">

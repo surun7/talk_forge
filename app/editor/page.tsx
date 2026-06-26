@@ -115,7 +115,8 @@ function EditorContent() {
     if (indexRef.current <= 0) return;
     indexRef.current -= 1;
     isUndoingRef.current = true;
-    setResume(historyRef.current[indexRef.current]);
+    const state = historyRef.current[indexRef.current];
+    if (state) setResume(state);
     setCanUndo(indexRef.current > 0);
     setCanRedo(true);
   }, [setResume]);
@@ -124,7 +125,8 @@ function EditorContent() {
     if (indexRef.current >= historyRef.current.length - 1) return;
     indexRef.current += 1;
     isUndoingRef.current = true;
-    setResume(historyRef.current[indexRef.current]);
+    const state = historyRef.current[indexRef.current];
+    if (state) setResume(state);
     setCanUndo(true);
     setCanRedo(indexRef.current < historyRef.current.length - 1);
   }, [setResume]);
@@ -153,8 +155,8 @@ function EditorContent() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [editMode, setEditMode] = useState<EditMode>("agent");
 
-  function moveSectionUp(key: string) { setSectionOrder((prev: string[]) => { const i = prev.indexOf(key); if (i <= 0) return prev; const n = [...prev]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; return n; }); }
-  function moveSectionDown(key: string) { setSectionOrder((prev: string[]) => { const i = prev.indexOf(key); if (i < 0 || i >= prev.length - 1) return prev; const n = [...prev]; [n[i], n[i + 1]] = [n[i + 1], n[i]]; return n; }); }
+  function moveSectionUp(key: string) { setSectionOrder((prev: string[]) => { const i = prev.indexOf(key); if (i <= 0) return prev; const n = [...prev]; const a = n[i]!; const b = n[i - 1]!; n[i] = b; n[i - 1] = a; return n; }); }
+  function moveSectionDown(key: string) { setSectionOrder((prev: string[]) => { const i = prev.indexOf(key); if (i < 0 || i >= prev.length - 1) return prev; const n = [...prev]; const a = n[i]!; const b = n[i + 1]!; n[i] = b; n[i + 1] = a; return n; }); }
 
   const creatingRef = useRef(false);
   const handleNewResume = useCallback(async () => {

@@ -1,23 +1,51 @@
+/**
+ * @deprecated This route has been superseded by the browser-direct architecture.
+ *
+ * The chat flow now runs entirely in the browser via lib/client-chat.ts:
+ *   - streamText() and all tool execution happen client-side
+ *   - AI API requests are forwarded through /api/proxy (pure CORS proxy)
+ *   - API keys NEVER touch the server's persistent storage
+ *
+ * This route is kept as a fallback but is no longer called by the UI.
+ * It can be safely deleted once the new architecture is confirmed stable.
+ */
+
 import { streamText, stepCountIs } from "ai";
 import { getModel } from "@/lib/providers";
 import { getCustomProvider, getSafeProviderList } from "@/lib/custom-providers-store";
 import { buildAllTools, setSectionOrderCallback } from "@/lib/resume-tools";
-import { createDefaultResume, type Resume } from "@/lib/resume-schema";
+import { createDefaultResume, resumeSchema, type Resume } from "@/lib/resume-schema";
 import { z } from "zod";
+import { SYSTEM_PROMPT } from "@/lib/chat-constants";
 
-const SYSTEM_PROMPT = `You are a resume-building assistant. You MUST call the appropriate tool to make changes to the user's resume.
+// ── Simple in-memory rate limiter ──
+interface RateLimitEntry {
+  tokens: number;
+  resetAt: number;
+}
 
-CRITICAL: You have access to tools. When the user asks you to add, update, or delete something, you MUST call the relevant tool. DO NOT just say "Done" without calling a tool. The tools are your only way to modify the resume.
+const rateLimitMap = new Map<string, RateLimitEntry>();
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 20;
 
-RULES:
-1. When the user asks for a change: call the tool FIRST, then respond with a brief confirmation (e.g. "Added experience at Google.").
-1a. To rename a section (e.g. "change projects to Academic Projects"), use renameSection.
-1b. To reorder sections (e.g. "move overview after experience"), use reorderSections with the full desired order array. Get section keys from listItems first.
-2. When the user asks a question: call listItems first, then answer.
-3. If you need to update or delete and don't know the ID: call listItems first.
-4. Links (LinkedIn, GitHub, portfolio, etc.) are managed with addLink/removeLink tools — do NOT include links in updateBasics.
-5. Profile photo is managed with updatePhoto tool — do NOT include photo in updateBasics.
-6. Keep confirmation responses to 1 short sentence. Never show code or JSON.`;
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { tokens: RATE_LIMIT_MAX_REQUESTS - 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  entry.tokens--;
+  return entry.tokens < 0;
+}
+
+// Cleanup stale entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now > entry.resetAt) rateLimitMap.delete(key);
+  }
+}, 300_000);
 
 const providerConfigSchema = z.object({
   id: z.string(),
@@ -34,12 +62,18 @@ const bodySchema = z.object({
       content: z.string(),
     })
   ),
-  resume: z.any().optional(),
+  resume: resumeSchema.optional(),
   sectionOrder: z.array(z.string()).optional(),
   providerConfig: providerConfigSchema,
 });
 
 export async function POST(req: Request) {
+  // Rate limiting by IP
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (isRateLimited(clientIp)) {
+    return Response.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  }
+
   const body = await req.json();
   const parsed = bodySchema.safeParse(body);
 
@@ -60,8 +94,9 @@ export async function POST(req: Request) {
     providerName = `${providerConfig.name} (${providerConfig.model})`;
   } else {
     const customList = getSafeProviderList();
-    if (customList.length > 0) {
-      const customConfig = getCustomProvider(customList[0].id);
+    const firstProvider = customList[0];
+    if (firstProvider) {
+      const customConfig = getCustomProvider(firstProvider.id);
       if (customConfig) {
         model = getModel("custom", customConfig);
         providerName = `${customConfig.name} (${customConfig.model})`;
@@ -76,9 +111,7 @@ export async function POST(req: Request) {
     );
   }
 
-  console.log(`[chat] Using provider: ${providerName}`);
-
-  const store = { current: (resume as Resume) ?? createDefaultResume() };
+  const store = { current: resume ?? createDefaultResume() };
   const tools = buildAllTools(store);
 
   const historyMessages = messages
@@ -89,7 +122,6 @@ export async function POST(req: Request) {
     }));
 
   const lastMsg = historyMessages[historyMessages.length - 1];
-  console.log(`[chat] Last message: "${lastMsg?.content?.slice(0, 80)}..."`);
 
   const result = streamText({
     model,
@@ -111,7 +143,6 @@ export async function POST(req: Request) {
           switch (part.type) {
             case "tool-call": {
               toolCallsSeen++;
-              console.log(`[chat] Tool call: ${part.toolName}(${JSON.stringify(part.input)})`);
               // Send heartbeat so the client knows the stream is alive during
               // long sequences of tool calls (no text-deltas while tools run).
               controller.enqueue(
@@ -122,7 +153,6 @@ export async function POST(req: Request) {
               break;
             }
             case "tool-result": {
-              console.log(`[chat] Tool result: ${JSON.stringify(part.output).slice(0, 100)}`);
               break;
             }
             case "text-delta": {
@@ -140,8 +170,6 @@ export async function POST(req: Request) {
               break;
           }
         }
-
-        console.log(`[chat] Done. Tools called: ${toolCallsSeen}`);
 
         controller.enqueue(
           encoder.encode(

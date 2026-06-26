@@ -16,7 +16,7 @@ interface Props {
 
 export default function SkillsSection({ resume, onChange, openSections, toggle, visible, togVis, sectionTitle, sectionIconEl, sLabel, sIcon, sIconSet, onMoveUp, onMoveDown, isFirst, isLast }: Props) {
   const { t } = useLocale();
-  function moveItem(idx: number, dir: number) { const arr = [...resume.skills]; const target = idx + dir; if (target < 0 || target >= arr.length) return; [arr[idx], arr[target]] = [arr[target], arr[idx]]; onChange({ ...resume, skills: arr }); }
+  function moveItem(idx: number, dir: number) { const arr = [...resume.skills]; const target = idx + dir; if (target < 0 || target >= arr.length) return; const a = arr[idx]!, b = arr[target]!; arr[idx] = b; arr[target] = a; onChange({ ...resume, skills: arr }); }
   return (<>
     <SectionHeader title={sectionTitle("skills", "SKILLS")} count={resume.skills.length} icon={sectionIconEl("skills", "wrench")} open={!!openSections.skills} onToggle={() => toggle("skills")}
       visible={visible("skills")} onToggleVisibility={() => togVis("skills")} sectionKey="skills" onTitleChange={sLabel} iconKey={sIcon("skills","wrench")} onIconChange={k => sIconSet("skills",k)}
@@ -28,7 +28,7 @@ export default function SkillsSection({ resume, onChange, openSections, toggle, 
             <Field label={t("skills.categoryName")}><input className={inputCls} value={cat.name} onChange={e => onChange({ ...resume, skills: resume.skills.map(x => x.id === cat.id ? { ...x, name: e.target.value } : x) })} /></Field>
             <div><span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-2">{t("skills.skills")}</span>
               {cat.skills.map((s, i) => (<div key={s.id} className="flex gap-1.5 items-center mb-2">
-                <input className={inputCls} value={s.name} onChange={e => { const sk = [...cat.skills]; sk[i] = { ...sk[i], name: e.target.value }; onChange({ ...resume, skills: resume.skills.map(x => x.id === cat.id ? { ...x, skills: sk } : x) }); }} />
+                <input className={inputCls} value={s.name} onChange={e => { const sk = [...cat.skills]; sk[i] = { ...sk[i]!, name: e.target.value }; onChange({ ...resume, skills: resume.skills.map(x => x.id === cat.id ? { ...x, skills: sk } : x) }); }} />
                 <button onClick={() => { onChange({ ...resume, skills: resume.skills.map(x => x.id === cat.id ? { ...x, skills: cat.skills.filter((_, j) => j !== i) } : x) }); }} className="p-1 text-slate-300 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
               </div>))}
               <button onClick={() => { const newSkill = { id: nextId(), name: "" }; onChange({ ...resume, skills: resume.skills.map(x => x.id === cat.id ? { ...x, skills: [...x.skills, newSkill] } : x) }); }} className={btnCls}><Plus className="w-3 h-3" />{t("skills.addSkill")}</button>

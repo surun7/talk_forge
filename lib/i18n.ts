@@ -397,11 +397,11 @@ export const translations: Record<string, Record<string, string>> = {
 };
 
 export function t(locale: "en" | "zh", key: string, replacements?: Record<string, string>): string {
-  const dict = translations[locale] || translations.en;
-  let val = dict[key];
+  const dict = translations[locale] ?? translations.en!;
+  let val = dict![key];
   if (!val) {
     // Fallback to English
-    val = translations.en[key] || key;
+    val = translations.en![key] ?? key;
   }
   if (replacements) {
     for (const [k, v] of Object.entries(replacements)) {

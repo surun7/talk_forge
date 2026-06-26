@@ -44,8 +44,8 @@ export default function BasicsSection({ resume, onChange, onOpenPhotoModal, open
           <span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-2">{t("basics.links")}</span>
           {resume.basics.links.map((link: any, i: number) => (
             <div key={i} className="flex gap-1.5 items-center mb-2">
-              <div className="flex-1"><Field label={t("basics.label")}><input className={inputCls} value={link.label} onChange={e => { const l = [...resume.basics.links]; l[i] = { ...l[i], label: e.target.value }; onChange({ ...resume, basics: { ...resume.basics, links: l } }); }} /></Field></div>
-              <div className="flex-[2]"><Field label={t("basics.url")}><input className={inputCls} value={link.url} onChange={e => { const l = [...resume.basics.links]; l[i] = { ...l[i], url: e.target.value }; onChange({ ...resume, basics: { ...resume.basics, links: l } }); }} /></Field></div>
+              <div className="flex-1"><Field label={t("basics.label")}><input className={inputCls} value={link.label} onChange={e => { const l = [...resume.basics.links]; l[i] = { ...l[i]!, label: e.target.value }; onChange({ ...resume, basics: { ...resume.basics, links: l } }); }} /></Field></div>
+              <div className="flex-[2]"><Field label={t("basics.url")}><input className={inputCls} value={link.url} onChange={e => { const l = [...resume.basics.links]; l[i] = { ...l[i]!, url: e.target.value }; onChange({ ...resume, basics: { ...resume.basics, links: l } }); }} /></Field></div>
               <button onClick={() => { const l = resume.basics.links.filter((_: any, j: number) => j !== i); onChange({ ...resume, basics: { ...resume.basics, links: l } }); }} className="p-1 text-slate-300 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
             </div>
           ))}
