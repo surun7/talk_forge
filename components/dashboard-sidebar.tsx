@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { PanelLeftClose, PanelLeftOpen, FolderDown, FolderUp, Loader2, KeyRound } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, FolderDown, Loader2, KeyRound, Download } from "lucide-react";
 import ApiSettingsPanel from "./api-settings-panel";
 import { getStorageAdapter } from "@/lib/storage";
 import { resumeSchema } from "@/lib/resume-schema";
@@ -20,34 +20,33 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
   const [status, setStatus] = useState("");
 
   const handleExport = useCallback(async () => {
+    setExporting(true);
+    setStatus("");
     try {
-      const dirHandle = await (window as any).showDirectoryPicker({ mode: "readwrite" });
-      setExporting(true);
-      setStatus("");
       const storage = getStorageAdapter();
-      const projects = await storage.exportAllLocalProjects();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       const index = await storage.loadProjectsIndex();
+      const projects = await storage.exportAllLocalProjects();
 
+      // Bundle all projects into one downloadable JSON file
+      const bundle: Record<string, any> = {};
       for (const meta of index) {
         const data = projects[meta.id];
-        if (!data) continue;
-        const fileName = "TalkForge_" + (meta.name || "Untitled").replace(/[/\\?%*:|"<>]/g, "_") + ".json";
-        const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(JSON.stringify(data, null, 2));
-        await writable.close();
+        if (data) bundle[meta.id] = data;
       }
-      setExporting(false);
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `TalkForge_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       setStatus(t("sidebar.exported", { count: String(index.length) }));
     } catch (e: any) {
-      if (e.name === "AbortError" || e.name === "DOMException") {
-        // user cancelled
-      } else {
-        setStatus(t("sidebar.exportFailed", { msg: e.message }));
-      }
-      setExporting(false);
+      setStatus(t("sidebar.exportFailed", { msg: e.message }));
     }
+    setExporting(false);
   }, [t]);
 
   const handleImport = useCallback(async () => {
@@ -109,7 +108,7 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
         <button onClick={handleExport} disabled={exporting}
           className={`flex items-center gap-3 w-full rounded-lg text-sm transition-colors ${collapsed ? "justify-center px-0 py-2" : "px-3 py-2"} text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50`}
           title={collapsed ? t("sidebar.exportBackup") : ""}>
-          {exporting ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <FolderUp className="w-4 h-4 shrink-0" />}
+          {exporting ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <Download className="w-4 h-4 shrink-0" />}
           {!collapsed && <span>{t("sidebar.exportBackup")}</span>}
         </button>
 

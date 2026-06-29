@@ -34,7 +34,7 @@ export const translations: Record<string, Record<string, string>> = {
 
     // Dashboard sidebar
     "sidebar.dataManagement": "Data Management",
-    "sidebar.exportBackup": "Export Resume Backup",
+    "sidebar.exportBackup": "Download Backup",
     "sidebar.importBackup": "Import Resume Backup",
     "sidebar.apiSettings": "API Settings",
     "sidebar.exported": "Exported {count} project(s)",
@@ -232,7 +232,7 @@ export const translations: Record<string, Record<string, string>> = {
 
     // Dashboard sidebar
     "sidebar.dataManagement": "数据管理",
-    "sidebar.exportBackup": "导出简历备份",
+    "sidebar.exportBackup": "下载备份",
     "sidebar.importBackup": "导入简历备份",
     "sidebar.apiSettings": "API 设置",
     "sidebar.exported": "成功导出 {count} 个项目",

@@ -77,15 +77,17 @@ export function sanitizeHtml(html: string): string {
  * Validate a URL to prevent javascript:, data:, and other dangerous schemes.
  * Returns the URL if safe, or "#" if dangerous.
  */
+/** Schemes that are never safe in user-provided URLs. */
+const UNSAFE_SCHEMES = ["javascript:", "vbscript:", "data:text/html"];
+
 export function safeUrl(url: string): string {
   if (!url) return "#";
   const trimmed = url.trim();
-  // Strip leading whitespace/control characters that could hide scheme
   const stripped = trimmed.replace(/^[\x00-\x20]+/, "").toLowerCase();
+  // Block javascript:/vbscript: entirely, and data: only for HTML payloads
+  // Allow data:image/* (user photos) and other benign data: types.
   if (
-    stripped.startsWith("javascript:") ||
-    stripped.startsWith("data:") ||
-    stripped.startsWith("vbscript:") ||
+    UNSAFE_SCHEMES.some((s) => stripped.startsWith(s)) ||
     stripped.startsWith("blob:")
   ) {
     return "#";
