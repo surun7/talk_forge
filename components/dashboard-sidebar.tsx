@@ -51,29 +51,48 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
 
   const handleImport = useCallback(async () => {
     try {
-      const dirHandle = await (window as any).showDirectoryPicker({ mode: "readwrite" });
+      const fileHandles = await (window as any).showOpenFilePicker({
+        multiple: true,
+        types: [{ description: "JSON Backup", accept: { "application/json": [".json"] } }],
+      });
       setImporting(true);
       setStatus("");
       const storage = getStorageAdapter();
       let imported = 0;
-
-      for await (const [name, handle] of (dirHandle as any).entries()) {
-        if (!name.endsWith(".json") || handle.kind !== "file") continue;
-        const file = await handle.getFile();
+      for (const fh of fileHandles) {
+        const file = await fh.getFile();
         const text = await file.text();
         let data;
         try { data = JSON.parse(text); } catch { continue; }
-        const parsed = resumeSchema.safeParse(data.resume);
-        if (!parsed.success) continue;
 
-        const { id } = await storage.createProject();
-        // Overwrite the created project with imported data
-        await storage.saveProject(id, {
-          resume: parsed.data,
-          conversations: data.conversations || [],
-          sectionOrder: data.sectionOrder || ["overview","experience","education","skills","projects","certificates","publications","languages","honors","hobbies","volunteers"],
-        });
-        imported++;
+        // Support both single-project and bundled formats
+        if (data.resume) {
+          // Single project format
+          const parsed = resumeSchema.safeParse(data.resume);
+          if (!parsed.success) continue;
+          const { id } = await storage.createProject();
+          await storage.saveProject(id, {
+            resume: parsed.data,
+            conversations: data.conversations || [],
+            sectionOrder: data.sectionOrder || ["overview","experience","education","skills","projects","certificates","publications","languages","honors","hobbies","volunteers"],
+          });
+          imported++;
+        } else {
+          // Bundled format: keys are project IDs, values are ProjectData
+          for (const key of Object.keys(data)) {
+            const item = data[key];
+            if (!item || !item.resume) continue;
+            const parsed = resumeSchema.safeParse(item.resume);
+            if (!parsed.success) continue;
+            const { id } = await storage.createProject();
+            await storage.saveProject(id, {
+              resume: parsed.data,
+              conversations: item.conversations || [],
+              sectionOrder: item.sectionOrder || ["overview","experience","education","skills","projects","certificates","publications","languages","honors","hobbies","volunteers"],
+            });
+            imported++;
+          }
+        }
       }
       setImporting(false);
       setStatus(t("sidebar.imported", { count: String(imported) }));
