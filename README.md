@@ -87,6 +87,15 @@ npm run dev   # manual mode works out of the box
 
 To enable AI chat, open the Dashboard → sidebar → API Settings and add at least one provider key.
 
+## Deployment
+
+```bash
+npm run build
+npm start
+```
+
+**If you modify the source code** (components, API routes, styles, etc.), you must re-run `npm run build` and restart the Next.js server for changes to take effect. Hot-reload (`npm run dev`) is for local development only and should not be used in production.
+
 ## Model Integration
 
 Talk Forge does not bundle any AI model. Configure providers via the **API Settings panel** in the dashboard sidebar or via environment variables.
