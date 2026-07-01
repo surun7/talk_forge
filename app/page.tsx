@@ -106,7 +106,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="h-full flex flex-col" style={{ background: "var(--bg)", color: "var(--fg)" }}>
+    <div className="h-full flex flex-col overflow-x-hidden" style={{ background: "var(--bg)", color: "var(--fg)" }}>
       {/* Header */}
       <header className="flex items-center h-14 px-4 md:px-6 flex-shrink-0 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2 md:gap-3">
@@ -145,11 +145,11 @@ export default function Dashboard() {
       {/* Body: sidebar + content */}
       <div className="flex-1 flex min-h-0">
         <DashboardSidebar onImportComplete={handleImportComplete} className="hidden md:flex" />
-        {/* Mobile drawer */}
+        {/* Mobile drawer — slides in from left like PC sidebar */}
         {mobileMenuOpen && (
           <>
             <div className="fixed inset-0 z-40 bg-black/30 md:hidden" onClick={() => setMobileMenuOpen(false)} />
-            <div className="fixed left-0 top-0 z-50 h-full w-64 md:hidden">
+            <div className="fixed left-0 top-0 z-50 h-full w-56 md:hidden bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 overflow-y-auto">
               <DashboardSidebar onImportComplete={handleImportComplete} />
             </div>
           </>

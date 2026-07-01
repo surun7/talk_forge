@@ -225,7 +225,7 @@ function EditorContent() {
   );
 
   return (
-    <div className="h-full flex flex-col" style={{ background: "var(--bg)", color: "var(--fg)" }}>
+    <div className="h-full flex flex-col overflow-x-hidden" style={{ background: "var(--bg)", color: "var(--fg)" }}>
       <Toolbar
         onNewResume={handleNewResume}
         previewRef={previewRef}
@@ -254,8 +254,8 @@ function EditorContent() {
         </div>
       </div>
 
-      {/* Mobile: edit-first layout */}
-      <div className="flex lg:hidden flex-1 flex-col min-h-0 border-t border-slate-200 dark:border-slate-800">
+      {/* Mobile: edit-first layout — no horizontal scroll */}
+      <div className="flex lg:hidden flex-1 flex-col min-h-0 border-t border-slate-200 dark:border-slate-800 overflow-x-hidden">
         <MobileEditor mode={editMode} onModeChange={setEditMode} previewPanel={previewPanel} chatPanel={chatPanel} />
       </div>
 
@@ -294,10 +294,10 @@ function MobileEditor({ mode, onModeChange, previewPanel, chatPanel }: {
       <div className="flex-1 min-h-0 flex flex-col" style={{ background: "var(--panel-bg)" }}>
         {chatPanel}
       </div>
-      {/* Preview overlay */}
+      {/* Preview overlay — scaled for mobile */}
       {showPreview && (
         <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-slate-900">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 shrink-0">
             <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t("editor.preview")}</span>
             <button onClick={() => setShowPreview(false)}
               className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -305,7 +305,11 @@ function MobileEditor({ mode, onModeChange, previewPanel, chatPanel }: {
             </button>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto">
-            {previewPanel}
+            <div className="flex justify-center py-4" style={{ transform: "scale(0.45)", transformOrigin: "top center" }}>
+              <div style={{ width: "210mm" }}>
+                {previewPanel}
+              </div>
+            </div>
           </div>
         </div>
       )}
