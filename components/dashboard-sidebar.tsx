@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { PanelLeftClose, PanelLeftOpen, FolderDown, Loader2, KeyRound, Download, CircleHelp } from "lucide-react";
 import ApiSettingsPanel from "./api-settings-panel";
 import HelpPanel from "./help-panel";
@@ -15,6 +15,7 @@ interface Props {
 
 export default function DashboardSidebar({ onImportComplete, className }: Props) {
   const { t } = useLocale();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [showApiSettings, setShowApiSettings] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -52,25 +53,19 @@ export default function DashboardSidebar({ onImportComplete, className }: Props)
     setExporting(false);
   }, [t]);
 
-  const handleImport = useCallback(async () => {
+  const processFiles = useCallback(async (files: FileList | File[]) => {
+    setImporting(true);
+    setStatus("");
+    const storage = getStorageAdapter();
+    let imported = 0;
     try {
-      const fileHandles = await (window as any).showOpenFilePicker({
-        multiple: true,
-        types: [{ description: "JSON Backup", accept: { "application/json": [".json"] } }],
-      });
-      setImporting(true);
-      setStatus("");
-      const storage = getStorageAdapter();
-      let imported = 0;
-      for (const fh of fileHandles) {
-        const file = await fh.getFile();
+      for (const file of Array.from(files)) {
+        if (!file.name.endsWith(".json")) continue;
         const text = await file.text();
         let data;
         try { data = JSON.parse(text); } catch { continue; }
 
-        // Support both single-project and bundled formats
         if (data.resume) {
-          // Single project format
           const parsed = resumeSchema.safeParse(data.resume);
           if (!parsed.success) continue;
           const { id } = await storage.createProject();
@@ -81,7 +76,6 @@ export default function DashboardSidebar({ onImportComplete, className }: Props)
           });
           imported++;
         } else {
-          // Bundled format: keys are project IDs, values are ProjectData
           for (const key of Object.keys(data)) {
             const item = data[key];
             if (!item || !item.resume) continue;
@@ -97,18 +91,26 @@ export default function DashboardSidebar({ onImportComplete, className }: Props)
           }
         }
       }
-      setImporting(false);
       setStatus(t("sidebar.imported", { count: String(imported) }));
       onImportComplete?.();
     } catch (e: any) {
-      if (e.name === "AbortError" || e.name === "DOMException") {
-        // user cancelled
-      } else {
-        setStatus(t("sidebar.importFailed", { msg: e.message }));
-      }
-      setImporting(false);
+      setStatus(t("sidebar.importFailed", { msg: e.message }));
     }
+    setImporting(false);
   }, [onImportComplete, t]);
+
+  const handleImport = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      processFiles(files);
+    }
+    // Reset so selecting the same file again triggers onChange
+    e.target.value = "";
+  }, [processFiles]);
 
   return (<>
     <div className={`flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300 flex-shrink-0 ${collapsed ? "w-12" : "w-56"} ${className || ""}`}>
@@ -167,6 +169,7 @@ export default function DashboardSidebar({ onImportComplete, className }: Props)
       )}
 
     </div>
+    <input ref={fileInputRef} type="file" accept=".json" multiple className="hidden" onChange={handleFileChange} />
     <ApiSettingsPanel open={showApiSettings} onClose={() => setShowApiSettings(false)} />
     <HelpPanel open={showHelp} onClose={() => setShowHelp(false)} />
   </>);
