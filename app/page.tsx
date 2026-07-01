@@ -149,7 +149,7 @@ export default function Dashboard() {
         {mobileMenuOpen && (
           <>
             <div className="fixed inset-0 z-40 bg-black/30 md:hidden" onClick={() => setMobileMenuOpen(false)} />
-            <div className="fixed left-0 top-0 z-50 h-full w-56 md:hidden bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 overflow-y-auto">
+            <div className="fixed left-0 top-0 z-50 h-full w-60 md:hidden bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
               <DashboardSidebar onImportComplete={handleImportComplete} />
             </div>
           </>
@@ -187,7 +187,7 @@ export default function Dashboard() {
                   ) : (
                     <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate flex-1">{meta.name || t("dashboard.untitled")}</h3>
                   )}
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0">
+                  <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity ml-2 shrink-0">
                     <button onClick={e => { e.stopPropagation(); startRename(meta); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                       <Pencil className="w-3.5 h-3.5" />
