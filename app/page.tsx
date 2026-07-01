@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Plus, Trash2, Pencil, Check, FileText, Sun, Moon, Languages } from "lucide-react";
+import { Sparkles, Plus, Trash2, Pencil, Check, FileText, Sun, Moon, Languages, Menu, X } from "lucide-react";
 import { getStorageAdapter, type ProjectMeta } from "@/lib/storage";
 import DashboardSidebar from "@/components/dashboard-sidebar";
 import { useLocale } from "@/lib/locale-provider";
@@ -30,6 +30,7 @@ export default function Dashboard() {
   const [renameValue, setRenameValue] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const storage = getStorageAdapter();
 
@@ -107,29 +108,34 @@ export default function Dashboard() {
   return (
     <div className="h-full flex flex-col" style={{ background: "var(--bg)", color: "var(--fg)" }}>
       {/* Header */}
-      <header className="flex items-center h-14 px-6 flex-shrink-0 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center">
+      <header className="flex items-center h-14 px-4 md:px-6 flex-shrink-0 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2 md:gap-3">
+          {/* Hamburger — mobile only */}
+          <button onClick={() => setMobileMenuOpen(true)}
+            className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">
+            <Menu className="w-4 h-4" />
+          </button>
+          <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
             <Sparkles className="w-3.5 h-3.5 text-white" />
           </div>
           <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{t("dashboard.title")}</span>
-          <span className="text-slate-300 dark:text-slate-600 mx-1">|</span>
-          <span className="text-sm text-slate-500 dark:text-slate-400">{t("dashboard.subtitle")}</span>
+          <span className="hidden md:inline text-slate-300 dark:text-slate-600 mx-1">|</span>
+          <span className="hidden md:inline text-sm text-slate-500 dark:text-slate-400">{t("dashboard.subtitle")}</span>
           <button onClick={handleCreate} disabled={creating}
-            className="ml-4 flex items-center gap-2 h-9 px-4 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200 disabled:opacity-50">
-            <Plus className="w-3.5 h-3.5" /> {t("dashboard.newResume")}
+            className="ml-2 md:ml-4 flex items-center gap-2 h-9 px-3 md:px-4 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200 disabled:opacity-50">
+            <Plus className="w-3.5 h-3.5" /> <span className="hidden md:inline">{t("dashboard.newResume")}</span>
           </button>
         </div>
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-1 md:gap-2 ml-auto">
           {/* Language toggle */}
           <button onClick={() => setLocale(locale === "zh" ? "en" : "zh")}
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200"
+            className="w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200"
             title={locale === "zh" ? t("dashboard.english") : t("dashboard.chinese")}>
             <Languages className="w-4 h-4" />
           </button>
           {/* Theme toggle */}
           <button ref={themeBtnRef} onClick={handleThemeToggle}
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200"
+            className="w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200"
             title={dark ? t("dashboard.lightMode") : t("dashboard.darkMode")}>
             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
@@ -138,8 +144,17 @@ export default function Dashboard() {
 
       {/* Body: sidebar + content */}
       <div className="flex-1 flex min-h-0">
-        <DashboardSidebar onImportComplete={handleImportComplete} />
-        <div className="flex-1 overflow-y-auto p-6">
+        <DashboardSidebar onImportComplete={handleImportComplete} className="hidden md:flex" />
+        {/* Mobile drawer */}
+        {mobileMenuOpen && (
+          <>
+            <div className="fixed inset-0 z-40 bg-black/30 md:hidden" onClick={() => setMobileMenuOpen(false)} />
+            <div className="fixed left-0 top-0 z-50 h-full w-64 md:hidden">
+              <DashboardSidebar onImportComplete={handleImportComplete} />
+            </div>
+          </>
+        )}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6">
         {projects.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">

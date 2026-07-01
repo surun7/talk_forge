@@ -22,6 +22,8 @@ export const translations: Record<string, Record<string, string>> = {
     "editor.loading": "Loading...",
     "editor.preview": "Preview",
     "editor.chat": "Chat",
+    "editor.aiChat": "AI Chat",
+    "editor.manual": "Manual",
 
     // Toolbar
     "toolbar.backToDashboard": "Back to Dashboard",
@@ -221,6 +223,8 @@ export const translations: Record<string, Record<string, string>> = {
     "editor.loading": "加载中...",
     "editor.preview": "预览",
     "editor.chat": "聊天",
+    "editor.aiChat": "AI 聊天",
+    "editor.manual": "手动编辑",
 
     // Toolbar
     "toolbar.backToDashboard": "返回控制台",

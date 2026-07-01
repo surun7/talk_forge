@@ -10,7 +10,7 @@ import { getStorageAdapter } from "@/lib/storage";
 import { useProject } from "@/hooks/use-project";
 import PhotoUploadModal from "@/components/photo-upload-modal";
 import { useLocale } from "@/lib/locale-provider";
-import { FileText, MessageCircle } from "lucide-react";
+import { FileText, MessageCircle, Eye, Menu, X } from "lucide-react";
 
 type EditMode = "agent" | "manual";
 
@@ -254,8 +254,9 @@ function EditorContent() {
         </div>
       </div>
 
+      {/* Mobile: edit-first layout */}
       <div className="flex lg:hidden flex-1 flex-col min-h-0 border-t border-slate-200 dark:border-slate-800">
-        <TabBar mode={editMode} onModeChange={setEditMode} previewPanel={previewPanel} chatPanel={chatPanel} />
+        <MobileEditor mode={editMode} onModeChange={setEditMode} previewPanel={previewPanel} chatPanel={chatPanel} />
       </div>
 
       <PhotoUploadModal open={showPhotoModal} onClose={() => setShowPhotoModal(false)} onSave={handlePhotoSave} />
@@ -263,30 +264,50 @@ function EditorContent() {
   );
 }
 
-function TabBar({ mode, onModeChange, previewPanel, chatPanel }: {
+function MobileEditor({ mode, onModeChange, previewPanel, chatPanel }: {
   mode: EditMode;
   onModeChange: (m: EditMode) => void;
   previewPanel: React.ReactNode;
   chatPanel: React.ReactNode;
 }) {
   const { t } = useLocale();
-  const [mobileTab, setMobileTab] = useState<"preview" | "chat">("preview");
+  const [showPreview, setShowPreview] = useState(false);
+
   return (
     <>
+      {/* Bottom bar with edit mode toggle + preview button */}
       <div className="flex items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2 gap-2">
-        <button onClick={() => setMobileTab("preview")}
-          className={`flex items-center gap-1.5 px-4 py-1.5 text-xs rounded-lg font-medium transition-colors ${mobileTab === "preview" ? "bg-indigo-600 text-white" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}>
-          <FileText className="w-3.5 h-3.5" /> {t("editor.preview")}
+        <button onClick={() => onModeChange("agent")}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-lg font-medium transition-colors ${mode === "agent" ? "bg-indigo-600 text-white" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}>
+          <MessageCircle className="w-3.5 h-3.5" /> {t("editor.aiChat")}
         </button>
-        <button onClick={() => setMobileTab("chat")}
-          className={`flex items-center gap-1.5 px-4 py-1.5 text-xs rounded-lg font-medium transition-colors ${mobileTab === "chat" ? "bg-indigo-600 text-white" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}>
-          <MessageCircle className="w-3.5 h-3.5" /> {t("editor.chat")}
+        <button onClick={() => onModeChange("manual")}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-lg font-medium transition-colors ${mode === "manual" ? "bg-indigo-600 text-white" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}>
+          <FileText className="w-3.5 h-3.5" /> {t("editor.manual")}
+        </button>
+        <button onClick={() => setShowPreview(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors">
+          <Eye className="w-3.5 h-3.5" /> {t("editor.preview")}
         </button>
       </div>
-      {mobileTab === "preview" ? (
-        <div className="flex-1 min-h-0 flex" style={{ background: "var(--bg)" }}>{previewPanel}</div>
-      ) : (
-        <div className="flex-1 min-h-0 flex flex-col" style={{ background: "var(--panel-bg)" }}>{chatPanel}</div>
+      {/* Edit panel (default) */}
+      <div className="flex-1 min-h-0 flex flex-col" style={{ background: "var(--panel-bg)" }}>
+        {chatPanel}
+      </div>
+      {/* Preview overlay */}
+      {showPreview && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-slate-900">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t("editor.preview")}</span>
+            <button onClick={() => setShowPreview(false)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            {previewPanel}
+          </div>
+        </div>
       )}
     </>
   );

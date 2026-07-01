@@ -10,9 +10,10 @@ import { useLocale } from "@/lib/locale-provider";
 
 interface Props {
   onImportComplete?: () => void;
+  className?: string;
 }
 
-export default function DashboardSidebar({ onImportComplete }: Props) {
+export default function DashboardSidebar({ onImportComplete, className }: Props) {
   const { t } = useLocale();
   const [collapsed, setCollapsed] = useState(false);
   const [showApiSettings, setShowApiSettings] = useState(false);
@@ -110,7 +111,7 @@ export default function DashboardSidebar({ onImportComplete }: Props) {
   }, [onImportComplete, t]);
 
   return (<>
-    <div className={`flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300 flex-shrink-0 ${collapsed ? "w-12" : "w-56"}`}>
+    <div className={`flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300 flex-shrink-0 ${collapsed ? "w-12" : "w-56"} ${className || ""}`}>
       {/* Toggle button */}
       <div className="flex items-center justify-end p-2">
         <button onClick={() => setCollapsed(!collapsed)}
