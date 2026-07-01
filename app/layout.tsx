@@ -17,6 +17,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Talk Forge - AI Resume Builder",
   description: "Build your resume by chatting with an AI assistant.",
+  metadataBase: new URL("https://www.talkforge.cc"),
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({
