@@ -333,7 +333,7 @@ function ResumeContent({
                   </span>
                 </div>
                 <p className="text-[1em] text-slate-500">
-                  {edu.degree}{edu.field && <> \u2014 {edu.field}</>}
+                  {edu.degree}{edu.field && <>{" — "}{edu.field}</>}
                 </p>
                 {edu.description && (
                   <div className="text-[1em] mt-0.5 text-slate-600">
@@ -451,7 +451,7 @@ function ResumeContent({
             {certificates.map((cert) => (
               <div
                 key={cert.id}
-                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100"
+                className="pb-1 mb-2 pl-3 border-l-2 a-border border-b border-slate-100"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -504,7 +504,7 @@ function ResumeContent({
             {publications.map((pub) => (
               <div
                 key={pub.id}
-                className="pb-3 mb-2 pl-3 border-l-2 a-border border-b border-slate-100"
+                className="pb-1 mb-2 pl-3 border-l-2 a-border border-b border-slate-100"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
