@@ -717,7 +717,7 @@ function ResumeContent({
           </div>
           <div className="ml-8 flex-shrink-0">
             <div className="w-[96px] h-[112px] p-[2px] rounded-xl" style={{ background: a }}>
-              <div className="w-full h-full rounded-[10px] overflow-hidden bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+              <div className="w-full h-full rounded-[10px] overflow-hidden bg-slate-100 flex items-center justify-center">
                 {basics.photo ? (
                   <img src={basics.photo} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
