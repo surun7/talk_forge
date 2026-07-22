@@ -16,11 +16,11 @@ export default function CertificatesSection({ resume, onChange, openSections, to
         <Field label={t("certificates.issuer")}><input className={inputCls} value={cert.issuer} onChange={e => updateCert(cert.id, { issuer: e.target.value })} /></Field>
         <div className="flex gap-2">
           <div className="flex-1"><Field label="Start Date"><input className={inputCls} value={cert.startDate || anyCert.date || ""} onChange={e => updateCert(cert.id, { startDate: e.target.value })} placeholder="2023-03" /></Field></div>
-          <div className="flex-1"><Field label="End Date"><input className={inputCls} value={cert.endDate || ""} onChange={e => updateCert(cert.id, { endDate: e.target.value })} disabled={cert.longTerm} placeholder="Present" /></Field></div>
+          <div className="flex-1"><Field label="End Date"><input className={inputCls} value={cert.endDate || ""} onChange={e => updateCert(cert.id, { endDate: e.target.value })} disabled={cert.longTerm} placeholder={t("certificates.present")} /></Field></div>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500 cursor-pointer select-none mt-1 mb-2">
           <input type="checkbox" checked={cert.longTerm} onChange={e => updateCert(cert.id, { longTerm: e.target.checked })} className="rounded" />
-          长期有效
+          {t("certificates.longTerm")}
         </label>
         <Field label="URL"><input className={inputCls} value={cert.url} onChange={e => updateCert(cert.id, { url: e.target.value })} /></Field>
         <FormattedField label={t("certificates.description")} value={cert.description} onChange={v => updateCert(cert.id, { description: v })} />

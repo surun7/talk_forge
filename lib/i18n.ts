@@ -160,6 +160,8 @@ export const translations: Record<string, Record<string, string>> = {
     "certificates.date": "Date",
     "certificates.url": "URL",
     "certificates.description": "Description",
+    "certificates.longTerm": "Permanent",
+    "certificates.present": "Present",
 
     // Publications section
     "publications.add": "Add Publication",
@@ -363,6 +365,8 @@ export const translations: Record<string, Record<string, string>> = {
     "certificates.date": "日期",
     "certificates.url": "链接",
     "certificates.description": "描述",
+    "certificates.longTerm": "长期有效",
+    "certificates.present": "至今",
 
     // Publications section
     "publications.add": "添加出版物",

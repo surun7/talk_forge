@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import type { Resume } from "@/lib/resume-schema";
+import { useLocale } from "@/lib/locale-provider";
 import { Mail, Phone, MapPin, Cake, MessageCircle, ExternalLink, Star } from "lucide-react";
 import {
   Briefcase,
@@ -206,6 +207,7 @@ function ResumeContent({
   resume: Resume;
   sectionOrder: string[];
 }) {
+  const { t } = useLocale();
   const {
     basics,
     experience,
@@ -456,10 +458,10 @@ function ResumeContent({
                   <span className="text-[0.917em] text-slate-500 not-italic">
                     {(cert as any).startDate || (cert as any).date}
                     {cert.longTerm
-                      ? " — 长期有效"
+                      ? " — " + t("certificates.longTerm")
                       : cert.endDate
                         ? " — " + cert.endDate
-                        : ((cert as any).startDate || (cert as any).date) ? " — Present" : ""}
+                        : ((cert as any).startDate || (cert as any).date) ? " — " + t("certificates.present") : ""}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
