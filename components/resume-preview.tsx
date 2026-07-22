@@ -331,7 +331,7 @@ function ResumeContent({
                   </span>
                 </div>
                 <p className="text-[1em] text-slate-500">
-                  {edu.degree}{edu.field && <><span className="inline-block w-3" />{edu.field}</>}
+                  {edu.degree}{edu.field && <><span className="inline-block w-16" />{edu.field}</>}
                 </p>
                 {edu.description && (
                   <div className="text-[1em] mt-0.5 text-slate-600">
