@@ -83,6 +83,7 @@ export const publicationItemSchema = z.object({
   publisher: z.string(),
   date: z.string(),
   url: z.string().url().or(z.literal("")),
+  description: z.string().optional().default(""),
 });
 
 export const languageItemSchema = z.object({
@@ -287,6 +288,7 @@ export function createTemplateResume(): Resume {
         publisher: "Journal Name",
         date: "2022-08",
         url: "",
+        description: "",
       },
     ],
     languages: [
@@ -405,6 +407,7 @@ export function createChineseTemplateResume(): Resume {
         publisher: "期刊名称",
         date: "2022-08",
         url: "",
+        description: "",
       },
     ],
     languages: [

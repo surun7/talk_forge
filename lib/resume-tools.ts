@@ -485,6 +485,7 @@ export function makeAddPublication(store: ResumeStore) {
         publisher: args.publisher,
         date: args.date,
         url: args.url ?? "",
+        description: "",
       });
       return `Publication "${args.title}" added.`;
     },

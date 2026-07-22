@@ -7,15 +7,14 @@ import { streamChat } from "@/lib/client-chat";
 import ManualEditor from "./editor/manual-editor";
 import { useLocale } from "@/lib/locale-provider";
 import {
- Send,
- Sparkles,
- Camera,
- Menu,
- Plus,
- MessageSquare,
- Trash2,
- Pencil,
- Check,
+  Send,
+  Sparkles,
+  Menu,
+  Plus,
+  MessageSquare,
+  Trash2,
+  Pencil,
+  Check,
 } from "lucide-react";
 
 interface ChatPanelProps {
@@ -598,15 +597,8 @@ export default function ChatPanel({
  className="border-t border-slate-100 dark:shadow-[0_0_0_1px_#1e293b] p-3 pb-5"
  style={{ background: "var(--panel-bg)" }}
  >
- <div className="flex items-end gap-2">
- <button
- onClick={onOpenPhotoModal}
- className="flex-shrink-0 w-9 h-9 rounded-xl shadow-ring dark:shadow-ring-d flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-indigo-500 hover:shadow-[0_0_0_1px_#a5b4fc] hover:shadow-sm hover:shadow-indigo-200/50 dark:hover:border-indigo-700 transition-all duration-200"
- title={t("chat.uploadPhoto")}
- >
- <Camera className="w-4 h-4" />
- </button>
- <textarea
+          <div className="flex items-end gap-2">
+              <textarea
  ref={textareaRef}
  value={input}
  onChange={(e) => setInput(e.target.value)}

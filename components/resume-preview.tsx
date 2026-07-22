@@ -260,7 +260,7 @@ function ResumeContent({
                   <span className="font-bold text-[1em] text-slate-800">
                     {exp.company}
                   </span>
-                  <span className="text-[0.833em] text-slate-400 italic">
+                  <span className="text-[0.917em] text-slate-500 not-italic">
                     {exp.startDate}
                     {exp.endDate ? " — " + exp.endDate : " — Present"}
                   </span>
@@ -325,7 +325,7 @@ function ResumeContent({
                   <span className="font-bold text-[1em] text-slate-800">
                     {edu.school}
                   </span>
-                  <span className="text-[0.833em] text-slate-400 italic">
+                  <span className="text-[0.917em] text-slate-500 not-italic">
                     {edu.startDate}
                     {edu.endDate ? " — " + edu.endDate : " — Present"}
                   </span>
@@ -393,7 +393,7 @@ function ResumeContent({
                   <span className="font-bold text-[1em] text-slate-800">
                     {proj.name}
                   </span>
-                  <span className="text-[0.833em] text-slate-400 italic">
+                  <span className="text-[0.917em] text-slate-500 not-italic">
                     {proj.startDate}
                     {proj.endDate ? " — " + proj.endDate : ""}
                   </span>
@@ -454,7 +454,7 @@ function ResumeContent({
                   <span className="font-bold text-[1em] text-slate-800">
                     {cert.name}
                   </span>
-                  <span className="text-[0.833em] text-slate-400 italic">
+                  <span className="text-[0.917em] text-slate-500 not-italic">
                     {cert.date}
                   </span>
                 </div>
@@ -500,7 +500,7 @@ function ResumeContent({
                   <span className="font-bold text-[1em] text-slate-800">
                     {pub.title}
                   </span>
-                  <span className="text-[0.833em] text-slate-400 italic">
+                  <span className="text-[0.917em] text-slate-500 not-italic">
                     {pub.date}
                   </span>
                 </div>
@@ -512,6 +512,11 @@ function ResumeContent({
                   <p className="text-[0.833em] text-slate-400 mt-0.5">
                     <a href={pub.url} target="_blank" rel="noopener noreferrer" className="a-link underline break-all">{pub.url}</a>
                   </p>
+                )}
+                {pub.description && (
+                  <div className="text-[1em] mt-1 text-slate-600">
+                    {renderRichText(pub.description)}
+                  </div>
                 )}
               </div>
             ))}
@@ -560,7 +565,7 @@ function ResumeContent({
                   <span className="font-bold text-[1em] text-slate-800">
                     {h.name}
                   </span>
-                  <span className="text-[0.833em] text-slate-400 italic">
+                  <span className="text-[0.917em] text-slate-500 not-italic">
                     {h.date}
                   </span>
                 </div>
@@ -617,7 +622,7 @@ function ResumeContent({
                   <span className="font-bold text-[1em] text-slate-800">
                     {v.organization}
                   </span>
-                  <span className="text-[0.833em] text-slate-400 italic">
+                  <span className="text-[0.917em] text-slate-500 not-italic">
                     {v.startDate}
                     {v.endDate ? " — " + v.endDate : ""}
                   </span>
@@ -726,7 +731,7 @@ function ResumeContent({
                       <div key={item.id + "_" + i2 + "_" + cs.id} className="pb-3 mb-3 pl-3 border-l-2 a-border border-b border-slate-100">
                         <div className="flex justify-between items-baseline">
                           <span className="font-bold text-[1em] text-slate-800">{item.name || (item as any).text}</span>
-                          <span className="text-[0.833em] text-slate-400 italic">{item.time}</span>
+                          <span className="text-[0.917em] text-slate-500 not-italic">{item.time}</span>
                         </div>
                         {item.affiliation && <p className="text-[1em] text-slate-500">{item.affiliation}</p>}
                         {item.description && <div className="text-[1em] mt-1 text-slate-600">{renderRichText(item.description)}</div>}
@@ -750,7 +755,7 @@ function ResumeContent({
                   <div key={item.id + "_" + i2 + "_" + sec.id} className="pb-3 mb-3 pl-3 border-l-2 a-border border-b border-slate-100">
                     <div className="flex justify-between items-baseline">
                       <span className="font-bold text-[1em] text-slate-800">{item.name || (item as any).text}</span>
-                      <span className="text-[0.833em] text-slate-400 italic">{item.time}</span>
+                      <span className="text-[0.917em] text-slate-500 not-italic">{item.time}</span>
                     </div>
                     {item.affiliation && <p className="text-[1em] text-slate-500">{item.affiliation}</p>}
                     {item.description && <div className="text-[1em] mt-1 text-slate-600">{renderRichText(item.description)}</div>}

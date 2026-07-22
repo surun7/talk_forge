@@ -101,7 +101,7 @@ export function SectionHeader({
       {onToggleVisibility ? (<button onClick={e => { e.stopPropagation(); onToggleVisibility(); }} className={"flex items-center justify-center rounded-lg p-1 flex-shrink-0 " + (visible === false ? "text-red-400 bg-red-50 dark:bg-red-900/20 shadow-[0_0_0_1px_#fecaca] dark:shadow-[0_0_0_1px_#7f1d1d]" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-700 shadow-ring dark:shadow-[0_0_0_1px_#334155]")}>{visible === false ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>) : eyeSpacer ? (<span className="p-1 invisible"><Eye className="w-4 h-4" /></span>) : null}
       <span className={"transition-transform duration-200 " + (open ? "rotate-0" : "-rotate-90")}><ChevronDown className="w-3 h-3 text-slate-400" /></span>
       {onIconChange && iconKey ? (<IconPickerButton icon={icon} iconKey={iconKey} onChange={onIconChange} />) : (<span className="text-indigo-500 p-0.5">{icon}</span>)}
-      {editing ? (<input ref={inputRef} value={title} onChange={e => onTitleChange!(sectionKey!, e.target.value)} onKeyDown={e => { if (e.key === "Enter") setEditing(false); }} onClick={e => e.stopPropagation()} className="flex-1 text-left text-xs font-semibold bg-transparent border-0 outline-none rounded px-0.5 py-1" />) : (<span className="flex-1 text-left">{title}</span>)}
+      {editing ? (<input ref={inputRef} value={title} onChange={e => onTitleChange!(sectionKey!, e.target.value)} onKeyDown={e => { if (e.key === "Enter") setEditing(false); }} onClick={e => e.stopPropagation()} className="flex-1 text-left text-xs font-semibold bg-transparent border-0 outline-none rounded px-0.5 py-1" />) : (<span className="flex-1 text-left text-xs font-semibold">{title}</span>)}
       <div className="flex items-center gap-1 flex-shrink-0 mr-2">
         <div className={"w-6 h-6 flex items-center justify-center rounded-lg transition-all duration-200 " + (canEdit ? (editing ? "shadow-[0_0_0_1px_#a7f3d0] text-emerald-500" : "shadow-ring text-slate-400 hover:text-indigo-500 hover:shadow-[0_0_0_1px_#cbd5e1]") : "opacity-0 pointer-events-none")}>
           {editing ? <button onClick={e => { e.stopPropagation(); setEditing(false); }} className="w-full h-full flex items-center justify-center"><Check className="w-3.5 h-3.5" /></button>
@@ -203,82 +203,24 @@ export function FormattedField({ label, value, onChange }: { label: string; valu
     sync();
   }
 
-  function selectNodeInEditor(el: HTMLElement) {
-    const sel = window.getSelection();
-    if (!sel) return;
-    sel.removeAllRanges();
-    const r = document.createRange();
-    r.selectNodeContents(el);
-    sel.addRange(r);
-    ref.current?.focus();
-  }
-
-  function selectSpanInEditor(from: HTMLElement, to: HTMLElement) {
-    const sel = window.getSelection();
-    if (!sel) return;
-    sel.removeAllRanges();
-    const r = document.createRange();
-    r.setStartBefore(from);
-    r.setEndAfter(to);
-    sel.addRange(r);
-    ref.current?.focus();
-  }
-
-  function cleanAllMarks(attr: string) {
-    ref.current?.querySelectorAll(`[${attr}]`).forEach(el => el.removeAttribute(attr));
-  }
-
   function toggleList(type: "ul" | "ol") {
     const editor = ref.current; if (!editor) return;
     editor.focus();
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
-
     const state = detectList();
+    const cmd = type === "ul" ? "insertUnorderedList" : "insertOrderedList";
 
-    // Case: In other list → switch tag via string replace, then restore selection
-    if (state !== null && state !== type) {
-      const re = new RegExp(`<${state}>([\\s\\S]*?)</${state}>`, "i");
-      const m = re.exec(editor.innerHTML);
-      if (m) {
-        const marker = `<${type} data-temp-list="1">${m[1]}</${type}>`;
-        editor.innerHTML = editor.innerHTML.replace(m[0], marker);
-        sync();
-        const listEl = editor.querySelector("[data-temp-list]");
-        if (listEl) { cleanAllMarks("data-temp-list"); selectNodeInEditor(listEl as HTMLElement); }
-      }
-      return;
-    }
-    // Case: In same list → cancel, restore selection spanning all result divs
     if (state === type) {
-      const re = new RegExp(`<${type}>([\\s\\S]*?)</${type}>`, "i");
-      const m = re.exec(editor.innerHTML);
-      if (m) {
-        const lis = m[1]!.match(/<li>([\s\S]*?)<\/li>/gi) || [];
-        const divs = lis.map(li => {
-          const inner = li.replace(/^<li>/i, "").replace(/<\/li>$/i, "");
-          return `<div data-temp-list="1">${inner || "<br>"}</div>`;
-        }).join("");
-        editor.innerHTML = editor.innerHTML.replace(m[0], divs || `<div data-temp-list="1"><br></div>`);
-        sync();
-        const allDivs = editor.querySelectorAll("[data-temp-list]");
-        if (allDivs.length > 0) {
-          const first = allDivs[0] as HTMLElement;
-          const last = allDivs[allDivs.length - 1] as HTMLElement;
-          cleanAllMarks("data-temp-list");
-          selectSpanInEditor(first, last);
-        }
-      }
-      return;
+      // Same type → toggle off (native execCommand handles unwrapping)
+      document.execCommand(cmd, false);
+    } else if (state !== null) {
+      // Different list type → toggle off current, then toggle on target
+      document.execCommand(state === "ul" ? "insertUnorderedList" : "insertOrderedList", false);
+      document.execCommand(cmd, false);
+    } else {
+      // Not in list → create (native execCommand wraps selection in <ul>/<ol>)
+      document.execCommand(cmd, false);
     }
-    // Case: Not in list → create from selection, then select the new list
-    const text = sel.toString().trim();
-    const lines = text ? text.split("\n").filter(l => l.trim()) : [""];
-    const listHtml = `<${type} data-temp-list="1"><li>${lines.join("</li><li>")}</li></${type}>`;
-    document.execCommand("insertHTML", false, listHtml);
     sync();
-    const newList = editor.querySelector("[data-temp-list]");
-    if (newList) { cleanAllMarks("data-temp-list"); selectNodeInEditor(newList as HTMLElement); }
   }
 
   const btn = "w-6 h-6 flex items-center justify-center rounded transition-colors";

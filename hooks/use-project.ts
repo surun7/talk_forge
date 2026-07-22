@@ -21,12 +21,17 @@ export function useProject(projectId: string | null) {
   useEffect(() => {
     if (!projectId) { setIsLoading(false); return; }
     (async () => {
-      const data = await storage.loadProject(projectId);
+      const [data, index] = await Promise.all([
+        storage.loadProject(projectId),
+        storage.loadProjectsIndex(),
+      ]);
       if (data) {
         setResume(data.resume);
         setConversations(data.conversations);
         setSectionOrder(data.sectionOrder);
-        setProjectName(data.resume.basics.name || "");
+        // Use the display name from meta (dashboard rename), fallback to basics.name
+        const meta = index.find(m => m.id === projectId);
+        setProjectName(meta?.name || data.resume.basics.name || "");
       }
       setIsLoading(false);
     })();
@@ -42,7 +47,6 @@ export function useProject(projectId: string | null) {
       const s = sectionOrderRef.current;
       if (!r) return;
       storage.saveProject(projectId, { resume: r, conversations: c, sectionOrder: s });
-      setProjectName(r.basics.name || "");
     }, 800);
   }, [projectId]);
 

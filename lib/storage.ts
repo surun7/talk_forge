@@ -108,7 +108,6 @@ class LocalStorageAdapter implements StorageAdapter {
     const index = await this.loadProjectsIndex();
     const meta = index.find(m => m.id === id);
     if (meta) {
-      meta.name = data.resume.basics.name || "Untitled";
       meta.previewFont = data.resume.basics.font || "lora";
       meta.previewColor = data.resume.basics.accentColor || "indigo";
       meta.updatedAt = Date.now();

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Plus, Trash2, Pencil, Check, FileText, Sun, Moon, Languages, Menu, X } from "lucide-react";
+import { Sparkles, Plus, Trash2, Pencil, Check, FileText, Sun, Moon, Languages, Menu, X, GripHorizontal } from "lucide-react";
 import { getStorageAdapter, type ProjectMeta } from "@/lib/storage";
 import DashboardSidebar from "@/components/dashboard-sidebar";
 import { useLocale } from "@/lib/locale-provider";
@@ -31,6 +31,43 @@ export default function Dashboard() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+  const isDraggingRef = useRef(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const cardSizeRef = useRef({ w: 0, h: 0 });
+  const colsRef = useRef(3);
+
+  function getCols(): number {
+    if (typeof window === "undefined") return 3;
+    if (window.innerWidth >= 1024) return 3;
+    if (window.innerWidth >= 768) return 2;
+    return 1;
+  }
+
+  function cardTransform(index: number, dragIdx: number | null, overIdx: number | null): string {
+    if (dragIdx === null || overIdx === null || dragIdx === overIdx) return "";
+    if (index === dragIdx) return "";
+    const { w, h } = cardSizeRef.current;
+    if (!w || !h) return "";
+    const cols = colsRef.current;
+    const gap = 16;
+    const cellW = w + gap;
+    const cellH = h + gap;
+    const curRow = Math.floor(index / cols);
+    const curCol = index % cols;
+    let newIdx = index;
+    if (dragIdx < overIdx && index > dragIdx && index <= overIdx) {
+      newIdx = index - 1;
+    } else if (dragIdx > overIdx && index >= overIdx && index < dragIdx) {
+      newIdx = index + 1;
+    }
+    const tgtRow = Math.floor(newIdx / cols);
+    const tgtCol = newIdx % cols;
+    const dx = (tgtCol - curCol) * cellW;
+    const dy = (tgtRow - curRow) * cellH;
+    return `translate(${dx}px, ${dy}px)`;
+  }
 
   const storage = getStorageAdapter();
 
@@ -168,11 +205,77 @@ export default function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
-            {projects.map(meta => (
+          <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto"
+            onDragOver={e => {
+              if (dragIndex === null) return;
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+              colsRef.current = getCols();
+              const grid = gridRef.current;
+              if (!grid) return;
+              const rect = grid.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              const { w, h } = cardSizeRef.current;
+              if (!w || !h) return;
+              const cols = colsRef.current;
+              const gap = 16;
+              const col = Math.floor(x / (w + gap));
+              const row = Math.floor(y / (h + gap));
+              const idx = Math.min(row * cols + col, projects.length - 1);
+              if (idx !== overIndex) setOverIndex(idx);
+            }}
+            onDragLeave={e => {
+              if (!gridRef.current?.contains(e.relatedTarget as Node)) {
+                setOverIndex(null);
+              }
+            }}
+            onDrop={e => {
+              e.preventDefault();
+              if (dragIndex === null || overIndex === null || dragIndex === overIndex) return;
+              const updated = [...projects];
+              const [moved] = updated.splice(dragIndex, 1);
+              if (!moved) return;
+              updated.splice(overIndex, 0, moved);
+              setProjects(updated);
+              storage.saveProjectsIndex(updated);
+              setDragIndex(null);
+              setOverIndex(null);
+              isDraggingRef.current = false;
+            }}>
+            {projects.map((meta, index) => {
+              const tr = cardTransform(index, dragIndex, overIndex);
+              return (
               <div key={meta.id}
-                className="group relative bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all duration-200 cursor-pointer"
-                onClick={() => router.push("/editor?id=" + meta.id)}>
+                draggable={renameId !== meta.id}
+                onDragStart={e => {
+                  isDraggingRef.current = true;
+                  e.dataTransfer.effectAllowed = "move";
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  cardSizeRef.current = { w: rect.width, h: rect.height };
+                  colsRef.current = getCols();
+                  setDragIndex(index);
+                }}
+                onDragEnd={() => {
+                  setDragIndex(null);
+                  setOverIndex(null);
+                  isDraggingRef.current = false;
+                }}
+                onClick={() => {
+                  if (isDraggingRef.current) {
+                    isDraggingRef.current = false;
+                    return;
+                  }
+                  router.push("/editor?id=" + meta.id);
+                }}
+                className={`group relative bg-white dark:bg-slate-800 rounded-xl p-5 border transition-all duration-200 cursor-pointer select-none ${
+                  dragIndex === index
+                    ? "opacity-40 border-indigo-300 dark:border-indigo-600 shadow-md z-10"
+                    : dragIndex !== null
+                    ? "border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md"
+                    : "border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md"
+                }`}
+                style={dragIndex !== null ? { transform: tr || undefined, transition: "transform 0.25s ease" } : { transition: "transform 0.25s ease" }}>
                 <div className="flex items-start justify-between mb-3">
                   {renameId === meta.id ? (
                     <input
@@ -187,10 +290,10 @@ export default function Dashboard() {
                   ) : (
                     <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate flex-1">{meta.name || t("dashboard.untitled")}</h3>
                   )}
-                  <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity ml-2 shrink-0">
-                    <button onClick={e => { e.stopPropagation(); startRename(meta); }}
+                  <div className="flex items-center gap-1 ml-2 shrink-0">
+                    <button onClick={e => { e.stopPropagation(); if (renameId === meta.id) { commitRename(meta.id); } else { startRename(meta); } }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                      <Pencil className="w-3.5 h-3.5" />
+                      {renameId === meta.id ? <Check className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
                     </button>
                     <button onClick={e => { e.stopPropagation(); setDeleteId(meta.id); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
@@ -203,8 +306,11 @@ export default function Dashboard() {
                   <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">{meta.previewFont}</span>
                   <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getColorHex(meta.previewColor) }} />
                 </div>
+                <div className="absolute bottom-2 right-2 text-slate-300 dark:text-slate-600 opacity-60">
+                  <GripHorizontal className="w-3.5 h-3.5" />
+                </div>
               </div>
-            ))}
+            );})}
           </div>
         )}
         </div>

@@ -22,22 +22,22 @@ A **pluggable AI-powered resume builder framework** with real-time A4 preview an
 ### AI & Editing
 
 - 🤖 **AI Conversational Assistant (Optional)**: 26 tools covering every operation — add/edit/delete all section items, rename sections, reorder items/sub-items/sections, toggle visibility, set icons, update basics, manage links, and more. Degrades to manual mode when no API keys are configured.
-- 📝 **Rich Manual Editor**: Bold, italic, underline, bullet & numbered lists. Section and item-level reordering with move buttons. Undo/Redo with Ctrl+Z/Y.
+- 📝 **Rich Manual Editor**: Bold, italic, underline, bullet & numbered lists — each field with its own formatting toolbar. Section and item-level reordering with move buttons. Undo/Redo with Ctrl+Z/Y.
 - 🎛️ **Full Section Controls**: Show/hide via eye toggle, rename inline, change icons from 35-icon picker, reorder freely including custom sections.
-- 📋 **All Standard Sections**: Personal Info (with links), Overview, Experience, Education, Skills, Projects, Certificates, Publications, Languages, Honors & Awards, Hobbies & Interests, Volunteering.
+- 📋 **All Standard Sections**: Personal Info (with links), Overview, Experience, Education, Skills, Projects, Certificates, Publications (with rich description), Languages, Honors & Awards, Hobbies & Interests, Volunteering.
 - ➕ **Custom Sections**: Create unlimited custom sections with structured subsections (Name, Affiliation, Time, Description) — each with rich text editing and collapsible items.
 
 ### Visual & Export
 
 - 🌓 **Dark Mode**: Full light/dark theme with ripple transition.
 - 🎨 **16 Fonts + 12 Theme Colors**: All served locally from `public/fonts/`, zero CDN dependency.
-- 👤 **Photo Support**: Upload/crop with accent-colored border frame.
-- 📄 **A4 PDF Export**: Preview and download are 1:1 identical, 3x rendering scale for sharp text.
+- 👤 **Photo Support**: Upload/crop with accent-colored border frame — available in manual editor.
+- 📄 **A4 PDF Export**: Preview and download are 1:1 identical, 3x rendering scale for sharp text. Date/time fields displayed prominently with larger, darker text.
 
 ### Project & Data Management
 
-- 📂 **Dashboard**: Multi-resume project cards with rename, delete, font/color preview, and dark/light mode toggle with ripple animation.
-- 💾 **Auto-save**: 800ms debounced persistence including full conversation history.
+- 📂 **Dashboard**: Multi-resume project cards with drag-and-drop reordering, inline rename (pencil/check toggles), delete, font/color preview, and dark/light mode toggle with ripple animation. Edit/delete buttons always visible.
+- 💾 **Auto-save**: 800ms debounced persistence including full conversation history — project display name independent from resume basics.name.
 - 📥 **Local Folder Import/Export**: Export all projects as JSON to any folder, import from folder — fully offline backup via File System Access API.
 - 🔑 **Visual API Configuration**: Dashboard sidebar panel with radio-button provider selection, eye-toggle key visibility, clear-button to remove keys, and model name fields with sensible defaults. All keys stored in browser `localStorage`.
 
