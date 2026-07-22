@@ -487,16 +487,18 @@ export function makeAddPublication(store: ResumeStore) {
       publisher: z.string(),
       date: z.string(),
       url: z.string().url().or(z.literal("")).optional(),
+      author: z.string().optional(),
+      description: z.string().optional(),
     }),
     execute: async (args) => {
       store.current.publications.push({
         id: nextId(),
         title: args.title,
-        author: "",
+        author: args.author ?? "",
         publisher: args.publisher,
         date: args.date,
         url: args.url ?? "",
-        description: "",
+        description: args.description ?? "",
       });
       return `Publication "${args.title}" added.`;
     },
@@ -962,7 +964,7 @@ export function makeListItems(store: ResumeStore) {
           id: c.id, name: c.name, skills: c.skills.map((s) => ({ id: s.id, name: s.name })),
         })),
         projects: store.current.projects.map((p) => ({
-          id: p.id, name: p.name,
+          id: p.id, name: p.name, role: p.role, affiliation: p.affiliation,
         })),
         certificates: store.current.certificates.map((c) => ({
           id: c.id, name: c.name, issuer: c.issuer,
@@ -983,7 +985,7 @@ export function makeListItems(store: ResumeStore) {
           id: v.id, organization: v.organization, role: v.role,
         })),
         customSections: store.current.customSections.map((s) => ({
-          id: s.id, title: s.title, items: s.items.map((i) => ({ id: i.id, name: i.name, affiliation: i.affiliation, startDate: (i as any).startDate, endDate: (i as any).endDate })),
+          id: s.id, title: s.title, items: s.items.map((i) => ({ id: i.id, name: i.name, role: i.role, affiliation: i.affiliation, startDate: (i as any).startDate, endDate: (i as any).endDate })),
         })),
       };
       return JSON.stringify(sections, null, 2);

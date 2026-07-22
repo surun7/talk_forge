@@ -68,6 +68,32 @@ The auto-save hook (`hooks/use-project.ts`) watches `resume` state and saves on 
 - Use `useRef` for latest values in closure-based callbacks
 - 800ms debounce on auto-save
 
+## AI Tools Must Mirror Schema Fields
+
+Every Zod schema field added/renamed/deleted must be synced across ALL of these:
+
+1. **Schema definition** (`lib/resume-schema.ts`) — the source of truth
+2. **Editor components** (`components/editor/sections/*.tsx`) — manual editing UI
+3. **Preview component** (`components/resume-preview.tsx`) — resume display
+4. **AI tools** (`lib/resume-tools.ts`) — `makeAdd*` and `makeUpdate*` functions must expose the same fields in their `inputSchema`
+5. **Summary tool** (`listItems` in `lib/resume-tools.ts`) — must include new fields so AI can see them
+6. **Template data** (`lib/resume-schema.ts` createTemplateResume/Chinese) — add empty defaults
+7. **i18n strings** (`lib/i18n.ts`) — add English and Chinese labels
+
+After any schema change, run this checklist:
+
+```
+□ schema.ts: field added with .default() or .optional()
+□ Editor: input field renders the new field
+□ Preview: field displayed conditionally (if value)  
+□ makeAddXxx: inputSchema includes new field, execute uses it
+□ makeUpdateXxx: inputSchema includes new field, execute uses Object.assign
+□ listItems summary: includes new field
+□ Templates: empty default value added
+□ i18n: both en and zh strings added
+□ npm run build passes
+```
+
 ## Commit Style
 
 - `feat:` for new features
