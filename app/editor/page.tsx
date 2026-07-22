@@ -176,13 +176,20 @@ function EditorContent() {
   const prevCsIdsRef = useRef(new Set(resume.customSections.map(s => s.id)));
   useEffect(() => { prevCsIdsRef.current = new Set(resume.customSections.map(s => s.id)); }, [resume.customSections]);
 
-  // On load, ensure all custom section IDs are in sectionOrder
+  // On load, sync sectionOrder with actual sections (add missing, remove orphans)
   useEffect(() => {
     if (!resume || isLoading) return;
-    const missing = resume.customSections.filter(s => !sectionOrder.includes(s.id)).map(s => s.id);
-    if (missing.length > 0) {
-      setSectionOrder(prev => [...prev, ...missing]);
-    }
+    const sectionKeys = new Set([
+      "basics", "overview", "experience", "education", "skills", "projects",
+      "certificates", "publications", "languages", "honors", "hobbies", "volunteers",
+      ...resume.customSections.map(s => s.id),
+    ]);
+    setSectionOrder(prev => {
+      const missing = resume.customSections.filter(s => !prev.includes(s.id)).map(s => s.id);
+      const filtered = prev.filter(k => sectionKeys.has(k));
+      if (missing.length === 0 && filtered.length === prev.length) return prev;
+      return [...filtered, ...missing];
+    });
   }, [isLoading]); // run once after load
 
   const handleResumeUpdate = useCallback((updated: Resume) => {
