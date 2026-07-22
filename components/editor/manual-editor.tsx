@@ -35,7 +35,10 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
   };
   const sIconEl = (k: string, f: string) => ICON_MAP[sIcon(k, f) as string] || ICON_MAP[f];
   const upBasic = (f: string, v: string) => onChange({ ...resume, basics: { ...resume.basics, [f]: v } });
-  const addL = (k: keyof Resume, item: any) => onChange({ ...resume, [k]: [...(resume[k] as any[]), item] } as Resume);
+  const addL = (k: keyof Resume, item: any) => {
+    console.log("[ManualEditor] addL called", k, item.id, "current customSections count:", resume.customSections.length);
+    onChange({ ...resume, [k]: [...(resume[k] as any[]), item] } as Resume);
+  };
 
   function moveCsItem(idx: number, dir: number) {
     const arr = [...resume.customSections];
@@ -102,7 +105,7 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
         }
         return null;
       })}
-      <button onClick={() => { const id = "cs_" + nextId(); addL("customSections", { id, title: "NEW SECTION", icon: "star", description: "", items: [] }); onAddCustomSection(id); }} className={btnCls}><Plus className="w-3 h-3" />{t("editor.addSection")}</button>
+      <button onClick={() => { const id = "cs_" + nextId(); console.log("[ManualEditor] Add Section clicked, new id:", id); addL("customSections", { id, title: "NEW SECTION", icon: "star", description: "", items: [] }); }} className={btnCls}><Plus className="w-3 h-3" />{t("editor.addSection")}</button>
     </div>
   );
 }

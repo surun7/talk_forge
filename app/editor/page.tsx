@@ -171,12 +171,12 @@ function EditorContent() {
     updateResume((prev: Resume) => ({ ...prev, basics: { ...prev.basics, photo: dataUrl } }));
   }, [updateResume]);
 
-  const handleAddCustomSection = useCallback((id: string) => { setSectionOrder(prev => prev.includes(id) ? prev : [...prev, id]); }, []);
+  const handleAddCustomSection = useCallback((id: string) => { console.log("[EditorContent] handleAddCustomSection called:", id); setSectionOrder(prev => prev.includes(id) ? prev : [...prev, id]); }, []);
 
   const prevCsIdsRef = useRef(new Set(resume.customSections.map(s => s.id)));
   useEffect(() => { prevCsIdsRef.current = new Set(resume.customSections.map(s => s.id)); }, [resume.customSections]);
 
-  // On load, sync sectionOrder with actual sections (add missing, remove orphans)
+  // On load, sync sectionOrder with actual sections (add missing, remove orphans, dedup)
   useEffect(() => {
     if (!resume || isLoading) return;
     const sectionKeys = new Set([
@@ -185,9 +185,11 @@ function EditorContent() {
       ...resume.customSections.map(s => s.id),
     ]);
     setSectionOrder(prev => {
-      const missing = resume.customSections.filter(s => !prev.includes(s.id)).map(s => s.id);
-      const filtered = prev.filter(k => sectionKeys.has(k));
-      if (missing.length === 0 && filtered.length === prev.length) return prev;
+      const deduped: string[] = [];
+      prev.forEach(k => { if (!deduped.includes(k)) deduped.push(k); });
+      const missing = resume.customSections.filter(s => !deduped.includes(s.id)).map(s => s.id);
+      const filtered = deduped.filter(k => sectionKeys.has(k));
+      if (missing.length === 0 && filtered.length === deduped.length) return prev;
       return [...filtered, ...missing];
     });
   }, [isLoading]); // run once after load
@@ -195,6 +197,7 @@ function EditorContent() {
   const handleResumeUpdate = useCallback((updated: Resume) => {
     // Sync new custom sections from AI into sectionOrder
     const newIds = updated.customSections.filter(s => !prevCsIdsRef.current.has(s.id)).map(s => s.id);
+    console.log("[EditorContent] handleResumeUpdate called, newIds:", newIds, "prevCsIds:", Array.from(prevCsIdsRef.current));
     if (newIds.length > 0) {
       setSectionOrder(prev => [...prev, ...newIds.filter(id => !prev.includes(id))]);
     }
