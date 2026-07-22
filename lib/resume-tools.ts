@@ -508,6 +508,7 @@ export function makeUpdatePublication(store: ResumeStore) {
       publisher: z.string().optional(),
       date: z.string().optional(),
       url: z.string().url().or(z.literal("")).optional(),
+      description: z.string().optional(),
     }),
     execute: async (args) => {
       const { id, ...rest } = args;
@@ -975,7 +976,7 @@ export function makeListItems(store: ResumeStore) {
           id: v.id, organization: v.organization, role: v.role,
         })),
         customSections: store.current.customSections.map((s) => ({
-          id: s.id, title: s.title, items: s.items.map((i) => ({ id: i.id, name: i.name, affiliation: i.affiliation, time: i.time })),
+          id: s.id, title: s.title, items: s.items.map((i) => ({ id: i.id, name: i.name, affiliation: i.affiliation, startDate: (i as any).startDate, endDate: (i as any).endDate })),
         })),
       };
       return JSON.stringify(sections, null, 2);
