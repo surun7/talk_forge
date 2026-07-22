@@ -71,10 +71,12 @@ export const certificateItemSchema = z.object({
   id: z.string(),
   name: z.string(),
   issuer: z.string(),
-  date: z.string(),
-  url: z.string().url().or(z.literal("")),
-  description: z.string(),
-});
+  startDate: z.string().default(""),
+  endDate: z.string().default(""),
+  longTerm: z.boolean().default(false),
+  url: z.string().url().or(z.literal("")).default(""),
+  description: z.string().default(""),
+}).passthrough();
 
 export const publicationItemSchema = z.object({
   id: z.string(),
@@ -276,7 +278,9 @@ export function createTemplateResume(): Resume {
         id: "tpl_cert_1",
         name: "AWS Certified Solutions Architect",
         issuer: "Amazon Web Services",
-        date: "2023-03",
+        startDate: "2023-03",
+        endDate: "",
+        longTerm: true,
         url: "",
         description: "",
       },
@@ -395,7 +399,9 @@ export function createChineseTemplateResume(): Resume {
         id: "zh_tpl_cert_1",
         name: "AWS 认证解决方案架构师",
         issuer: "Amazon Web Services",
-        date: "2023-03",
+        startDate: "2023-03",
+        endDate: "",
+        longTerm: true,
         url: "",
         description: "",
       },

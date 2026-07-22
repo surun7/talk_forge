@@ -454,7 +454,12 @@ function ResumeContent({
                     {cert.name}
                   </span>
                   <span className="text-[0.917em] text-slate-500 not-italic">
-                    {cert.date}
+                    {(cert as any).startDate || (cert as any).date}
+                    {cert.longTerm
+                      ? " — 长期有效"
+                      : cert.endDate
+                        ? " — " + cert.endDate
+                        : ((cert as any).startDate || (cert as any).date) ? " — Present" : ""}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
