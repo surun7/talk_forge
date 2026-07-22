@@ -400,9 +400,11 @@ function ResumeContent({
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  {proj.role && (
-                    <p className="text-[1em] text-slate-500">{proj.role}</p>
-                  )}
+                  <p className="text-[1em] text-slate-500">
+                    {proj.role}
+                    {proj.role && proj.affiliation && <span className="inline-block w-8" />}
+                    {proj.affiliation}
+                  </p>
                   {proj.url && (
                     <a
                       href={proj.url}
@@ -414,9 +416,6 @@ function ResumeContent({
                     </a>
                   )}
                 </div>
-                {proj.affiliation && (
-                  <p className="text-[1em] text-slate-500">{proj.affiliation}</p>
-                )}
                 {proj.description && (
                   <div className="text-[1em] mt-0.5 text-slate-600">
                     {renderRichText(proj.description)}
@@ -750,8 +749,13 @@ function ResumeContent({
                             {item.endDate ? " — " + item.endDate : (item.startDate || (item as any).time) ? " — Present" : ""}
                           </span>
                         </div>
-                        {item.role && <p className="text-[1em] text-slate-500">{item.role}</p>}
-                        {item.affiliation && <p className="text-[1em] text-slate-500">{item.affiliation}</p>}
+                        {(item.role || item.affiliation) && (
+                          <p className="text-[1em] text-slate-500">
+                            {item.role}
+                            {item.role && item.affiliation && <span className="inline-block w-8" />}
+                            {item.affiliation}
+                          </p>
+                        )}
                         {item.description && <div className="text-[1em] mt-1 text-slate-600">{renderRichText(item.description)}</div>}
                       </div>
                     ))}
@@ -778,8 +782,13 @@ function ResumeContent({
                         {item.endDate ? " — " + item.endDate : (item.startDate || (item as any).time) ? " — Present" : ""}
                       </span>
                     </div>
-                    {item.role && <p className="text-[1em] text-slate-500">{item.role}</p>}
-                    {item.affiliation && <p className="text-[1em] text-slate-500">{item.affiliation}</p>}
+                    {(item.role || item.affiliation) && (
+                      <p className="text-[1em] text-slate-500">
+                        {item.role}
+                        {item.role && item.affiliation && <span className="inline-block w-8" />}
+                        {item.affiliation}
+                      </p>
+                    )}
                     {item.description && <div className="text-[1em] mt-1 text-slate-600">{renderRichText(item.description)}</div>}
                   </div>
                 ))}
