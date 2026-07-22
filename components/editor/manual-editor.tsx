@@ -48,6 +48,19 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
     onChange({ ...resume, customSections: arr });
   }
 
+  function moveCsItemInSection(sectionId: string, idx: number, dir: number) {
+    const section = resume.customSections.find(s => s.id === sectionId);
+    if (!section) return;
+    const items = [...section.items];
+    const target = idx + dir;
+    if (target < 0 || target >= items.length) return;
+    const a = items[idx]!;
+    const b = items[target]!;
+    items[idx] = b;
+    items[target] = a;
+    onChange({ ...resume, customSections: resume.customSections.map(x => x.id === sectionId ? { ...x, items } : x) });
+  }
+
   const commonProps = { resume, onChange, openSections, toggle, visible, togVis, sectionTitle: sTitle, sectionIconEl: sIconEl, sLabel, sIcon, sIconSet, upBasic };
 
   return (
@@ -72,7 +85,7 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
                   <div className="pt-1"><span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-2">Items</span>
                     <div className="space-y-2 mb-3">
                     {cs.items.map((item: any, i2: number) => (
-                      <CollapsibleItem key={item.id + "_" + i2 + "_" + cs.id} title={item.name || (item as any).text || `Item ${i2 + 1}`} open={!!openSections[item.id]} onToggle={() => toggle(item.id)} onDelete={() => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.filter((i: any) => i.id !== item.id) } : x) })}>
+                      <CollapsibleItem key={item.id + "_" + i2 + "_" + cs.id} title={item.name || (item as any).text || `Item ${i2 + 1}`} open={!!openSections[item.id]} onToggle={() => toggle(item.id)} onMoveUp={() => moveCsItemInSection(cs.id, i2, -1)} onMoveDown={() => moveCsItemInSection(cs.id, i2, 1)} isFirst={i2 === 0} isLast={i2 === cs.items.length - 1} onDelete={() => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.filter((i: any) => i.id !== item.id) } : x) })}>
                         <Field label="Name"><input className={inputCls} value={item.name || (item as any).text || ""} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.map((i: any) => i.id === item.id ? { ...i, name: e.target.value } : i) } : x) })} /></Field>
                         <Field label="Affiliation"><input className={inputCls} value={item.affiliation || ""} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.map((i: any) => i.id === item.id ? { ...i, affiliation: e.target.value } : i) } : x) })} /></Field>
                         <Field label="Time"><input className={inputCls} value={item.time || ""} onChange={e => onChange({ ...resume, customSections: resume.customSections.map(x => x.id === cs.id ? { ...x, items: x.items.map((i: any) => i.id === item.id ? { ...i, time: e.target.value } : i) } : x) })} /></Field>
