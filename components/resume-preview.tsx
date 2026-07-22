@@ -466,19 +466,21 @@ function ResumeContent({
                         : ((cert as any).startDate || (cert as any).date) ? " — " + t("certificates.present") : ""}
                   </span>
                 </div>
-                <div className="flex justify-between items-baseline">
-                  <p className="text-[1em] text-slate-500">{cert.issuer}</p>
-                  {cert.url && (
-                    <a
-                      href={cert.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="a-link underline text-[0.833em]"
-                    >
-                      {cert.url}
-                    </a>
-                  )}
-                </div>
+                {(cert.issuer || cert.url) && (
+                  <div className="flex justify-between items-baseline">
+                    {cert.issuer && <p className="text-[1em] text-slate-500">{cert.issuer}</p>}
+                    {cert.url && (
+                      <a
+                        href={cert.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="a-link underline text-[0.833em]"
+                      >
+                        {cert.url}
+                      </a>
+                    )}
+                  </div>
+                )}
                 {cert.description && (
                   <div className="text-[1em] mt-0.5 text-slate-600">
                     {renderRichText(cert.description)}
