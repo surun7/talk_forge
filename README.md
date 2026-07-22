@@ -25,7 +25,7 @@ A **pluggable AI-powered resume builder framework** with real-time A4 preview an
 - 📝 **Rich Manual Editor**: Bold, italic, underline, bullet & numbered lists — each field with its own formatting toolbar. Section and item-level reordering with move buttons. Undo/Redo with Ctrl+Z/Y.
 - 🎛️ **Full Section Controls**: Show/hide via eye toggle, rename inline, change icons from 35-icon picker, reorder freely including custom sections.
 - 📋 **All Standard Sections**: Personal Info (with links), Overview, Experience, Education, Skills, Projects, Certificates, Publications (with rich description), Languages, Honors & Awards, Hobbies & Interests, Volunteering.
-- ➕ **Custom Sections**: Create unlimited custom sections with structured subsections (Name, Affiliation, Time, Description) — each with rich text editing and collapsible items.
+- ➕ **Custom Sections**: Create unlimited custom sections with structured subsections (Name, Affiliation, Start/End Date, Description) — each with rich text editing, collapsible items, and move up/down buttons. Custom sections intentionally mirror default-section capabilities for a consistent editing experience.
 
 ### Visual & Export
 

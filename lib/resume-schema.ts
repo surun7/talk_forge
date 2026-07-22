@@ -118,9 +118,10 @@ export const customItemSchema = z.object({
   id: z.string(),
   name: z.string().default(""),
   affiliation: z.string().default(""),
-  time: z.string().default(""),
+  startDate: z.string().default(""),
+  endDate: z.string().default(""),
   description: z.string().default(""),
-}).passthrough(); // accepts old {text} field for backward compatibility
+}).passthrough(); // accepts old {text} or {time} fields for backward compatibility
 
 export const customSectionSchema = z.object({
   id: z.string(),

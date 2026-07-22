@@ -719,13 +719,14 @@ export function makeAddCustomSectionItem(store: ResumeStore) {
       sectionId: z.string(),
       name: z.string(),
       affiliation: z.string().optional(),
-      time: z.string().optional(),
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
       description: z.string().optional(),
     }),
     execute: async (args) => {
       const section = store.current.customSections.find((s) => s.id === args.sectionId);
       if (!section) return `Custom section ${args.sectionId} not found.`;
-      section.items.push({ id: nextId(), name: args.name, affiliation: args.affiliation || "", time: args.time || "", description: args.description || "" });
+      section.items.push({ id: nextId(), name: args.name, affiliation: args.affiliation || "", startDate: args.startDate || "", endDate: args.endDate || "", description: args.description || "" });
       return `Item "${args.name}" added to "${section.title}".`;
     },
   });
@@ -738,7 +739,8 @@ export function makeUpdateCustomSectionItem(store: ResumeStore) {
       itemId: z.string(),
       name: z.string().optional(),
       affiliation: z.string().optional(),
-      time: z.string().optional(),
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
       description: z.string().optional(),
     }),
     execute: async (args) => {

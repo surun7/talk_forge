@@ -731,7 +731,10 @@ function ResumeContent({
                       <div key={item.id + "_" + i2 + "_" + cs.id} className="pb-3 mb-3 pl-3 border-l-2 a-border border-b border-slate-100">
                         <div className="flex justify-between items-baseline">
                           <span className="font-bold text-[1em] text-slate-800">{item.name || (item as any).text}</span>
-                          <span className="text-[0.917em] text-slate-500 not-italic">{item.time}</span>
+                          <span className="text-[0.917em] text-slate-500 not-italic">
+                            {item.startDate || (item as any).time}
+                            {item.endDate ? " — " + item.endDate : (item.startDate || (item as any).time) ? " — Present" : ""}
+                          </span>
                         </div>
                         {item.affiliation && <p className="text-[1em] text-slate-500">{item.affiliation}</p>}
                         {item.description && <div className="text-[1em] mt-1 text-slate-600">{renderRichText(item.description)}</div>}
@@ -755,7 +758,10 @@ function ResumeContent({
                   <div key={item.id + "_" + i2 + "_" + sec.id} className="pb-3 mb-3 pl-3 border-l-2 a-border border-b border-slate-100">
                     <div className="flex justify-between items-baseline">
                       <span className="font-bold text-[1em] text-slate-800">{item.name || (item as any).text}</span>
-                      <span className="text-[0.917em] text-slate-500 not-italic">{item.time}</span>
+                      <span className="text-[0.917em] text-slate-500 not-italic">
+                        {item.startDate || (item as any).time}
+                        {item.endDate ? " — " + item.endDate : (item.startDate || (item as any).time) ? " — Present" : ""}
+                      </span>
                     </div>
                     {item.affiliation && <p className="text-[1em] text-slate-500">{item.affiliation}</p>}
                     {item.description && <div className="text-[1em] mt-1 text-slate-600">{renderRichText(item.description)}</div>}

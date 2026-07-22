@@ -61,6 +61,16 @@ function EditorContent() {
 
   const resume = loadedResume || createTemplateResume();
 
+  // Safe sectionOrder setter: always deduplicates and preserves reference when unchanged
+  const setSectionOrderSafe = useCallback((action: React.SetStateAction<string[]>) => {
+    setSectionOrder(prev => {
+      const next = typeof action === "function" ? (action as (prev: string[]) => string[])(prev) : action;
+      const deduped = [...new Set(next)];
+      if (deduped.length === prev.length && deduped.every((k, i) => k === prev[i])) return prev;
+      return deduped;
+    });
+  }, [setSectionOrder]);
+
   // ── Undo/Redo ──
   const historyRef = useRef<Resume[]>([]);
   const indexRef = useRef(0);
@@ -134,7 +144,7 @@ function EditorContent() {
   // Expose sectionOrder setter for chat panel SSE
   useEffect(() => {
     (window as any).__talkForgeSetSectionOrder = (order: string[]) => {
-      setSectionOrder(order);
+      setSectionOrderSafe(order);
     };
     return () => { delete (window as any).__talkForgeSetSectionOrder; };
   }, []);
@@ -155,8 +165,8 @@ function EditorContent() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [editMode, setEditMode] = useState<EditMode>("agent");
 
-  function moveSectionUp(key: string) { setSectionOrder((prev: string[]) => { const i = prev.indexOf(key); if (i <= 0) return prev; const n = [...prev]; const a = n[i]!; const b = n[i - 1]!; n[i] = b; n[i - 1] = a; return n; }); }
-  function moveSectionDown(key: string) { setSectionOrder((prev: string[]) => { const i = prev.indexOf(key); if (i < 0 || i >= prev.length - 1) return prev; const n = [...prev]; const a = n[i]!; const b = n[i + 1]!; n[i] = b; n[i + 1] = a; return n; }); }
+  function moveSectionUp(key: string) { setSectionOrderSafe((prev: string[]) => { const i = prev.indexOf(key); if (i <= 0) return prev; const n = [...prev]; const a = n[i]!; const b = n[i - 1]!; n[i] = b; n[i - 1] = a; return n; }); }
+  function moveSectionDown(key: string) { setSectionOrderSafe((prev: string[]) => { const i = prev.indexOf(key); if (i < 0 || i >= prev.length - 1) return prev; const n = [...prev]; const a = n[i]!; const b = n[i + 1]!; n[i] = b; n[i + 1] = a; return n; }); }
 
   const creatingRef = useRef(false);
   const handleNewResume = useCallback(async () => {
@@ -171,7 +181,7 @@ function EditorContent() {
     updateResume((prev: Resume) => ({ ...prev, basics: { ...prev.basics, photo: dataUrl } }));
   }, [updateResume]);
 
-  const handleAddCustomSection = useCallback((id: string) => { console.log("[EditorContent] handleAddCustomSection called:", id); setSectionOrder(prev => prev.includes(id) ? prev : [...prev, id]); }, []);
+  const handleAddCustomSection = useCallback((id: string) => { setSectionOrderSafe(prev => prev.includes(id) ? prev : [...prev, id]); }, [setSectionOrderSafe]);
 
   const prevCsIdsRef = useRef(new Set(resume.customSections.map(s => s.id)));
   useEffect(() => { prevCsIdsRef.current = new Set(resume.customSections.map(s => s.id)); }, [resume.customSections]);
@@ -184,12 +194,10 @@ function EditorContent() {
       "certificates", "publications", "languages", "honors", "hobbies", "volunteers",
       ...resume.customSections.map(s => s.id),
     ]);
-    setSectionOrder(prev => {
-      const deduped: string[] = [];
-      prev.forEach(k => { if (!deduped.includes(k)) deduped.push(k); });
-      const missing = resume.customSections.filter(s => !deduped.includes(s.id)).map(s => s.id);
-      const filtered = deduped.filter(k => sectionKeys.has(k));
-      if (missing.length === 0 && filtered.length === deduped.length) return prev;
+    setSectionOrderSafe(prev => {
+      const missing = resume.customSections.filter(s => !prev.includes(s.id)).map(s => s.id);
+      const filtered = prev.filter(k => sectionKeys.has(k));
+      if (missing.length === 0 && filtered.length === prev.length) return prev;
       return [...filtered, ...missing];
     });
   }, [isLoading]); // run once after load
@@ -197,13 +205,12 @@ function EditorContent() {
   const handleResumeUpdate = useCallback((updated: Resume) => {
     // Sync new custom sections from AI into sectionOrder
     const newIds = updated.customSections.filter(s => !prevCsIdsRef.current.has(s.id)).map(s => s.id);
-    console.log("[EditorContent] handleResumeUpdate called, newIds:", newIds, "prevCsIds:", Array.from(prevCsIdsRef.current));
     if (newIds.length > 0) {
-      setSectionOrder(prev => [...prev, ...newIds.filter(id => !prev.includes(id))]);
+      setSectionOrderSafe(prev => [...prev, ...newIds.filter(id => !prev.includes(id))]);
     }
     prevCsIdsRef.current = new Set(updated.customSections.map(s => s.id));
     updateResumeDebounced(updated);
-  }, [updateResumeDebounced]);
+  }, [setSectionOrderSafe, updateResumeDebounced]);
 
   if (isLoading || !initialized) {
     return <div className="h-full flex items-center justify-center"><p className="text-slate-400">{t("editor.loading")}</p></div>;
