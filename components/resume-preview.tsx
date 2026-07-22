@@ -672,6 +672,11 @@ function ResumeContent({
                   <Phone className="w-3 h-3 a-icon" /> {basics.phone}
                 </span>
               )}
+              {basics.wechat && (
+                <span className="inline-flex items-center gap-1">
+                  <MessageCircle className="w-3 h-3 a-icon" /> {basics.wechat}
+                </span>
+              )}
               {basics.location && (
                 <span className="inline-flex items-center gap-1">
                   <MapPin className="w-3 h-3 a-icon" /> {basics.location}
@@ -680,11 +685,6 @@ function ResumeContent({
               {basics.birth && (
                 <span className="inline-flex items-center gap-1">
                   <Cake className="w-3 h-3 a-icon" /> {basics.birth}
-                </span>
-              )}
-              {basics.wechat && (
-                <span className="inline-flex items-center gap-1">
-                  <MessageCircle className="w-3 h-3 a-icon" /> {basics.wechat}
                 </span>
               )}
             </div>

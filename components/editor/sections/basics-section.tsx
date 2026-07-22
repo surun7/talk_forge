@@ -38,9 +38,9 @@ export default function BasicsSection({ resume, onChange, onOpenPhotoModal, open
           <div className="flex-1"><Field label={t("basics.email")}><input className={inputCls} value={resume.basics.email} onChange={e => upBasic("email", e.target.value)} placeholder={t("basics.emailPlaceholder")} /></Field></div>
           <div className="flex-1"><Field label={t("basics.phone")}><input className={inputCls} value={resume.basics.phone} onChange={e => upBasic("phone", e.target.value)} /></Field></div>
         </div>
+        <Field label={t("basics.wechat")}><input className={inputCls} value={resume.basics.wechat || ""} onChange={e => upBasic("wechat", e.target.value)} placeholder={t("basics.wechatPlaceholder")} /></Field>
         <Field label={t("basics.location")}><input className={inputCls} value={resume.basics.location} onChange={e => upBasic("location", e.target.value)} placeholder={t("basics.locationPlaceholder")} /></Field>
         <Field label={t("basics.birth")}><input className={inputCls} value={resume.basics.birth || ""} onChange={e => upBasic("birth", e.target.value)} placeholder={t("basics.birthPlaceholder")} /></Field>
-        <Field label={t("basics.wechat")}><input className={inputCls} value={resume.basics.wechat || ""} onChange={e => upBasic("wechat", e.target.value)} placeholder={t("basics.wechatPlaceholder")} /></Field>
         <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
           <span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-2">{t("basics.links")}</span>
           {resume.basics.links.map((link: any, i: number) => (
