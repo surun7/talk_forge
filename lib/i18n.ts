@@ -86,6 +86,20 @@ export const translations: Record<string, Record<string, string>> = {
     // Manual editor (Add Section)
     "editor.addSection": "Add Section",
 
+    // Section default titles
+    "section.basics": "PERSONAL INFO",
+    "section.overview": "OVERVIEW",
+    "section.experience": "EXPERIENCE",
+    "section.education": "EDUCATION",
+    "section.skills": "SKILLS",
+    "section.projects": "PROJECTS",
+    "section.certificates": "CERTIFICATES",
+    "section.publications": "PUBLICATIONS",
+    "section.languages": "LANGUAGES",
+    "section.honors": "HONORS & AWARDS",
+    "section.hobbies": "HOBBIES & INTERESTS",
+    "section.volunteers": "VOLUNTEERING",
+
     // Custom section item fields
     "custom.name": "Name",
     "custom.role": "Role",
@@ -303,6 +317,20 @@ export const translations: Record<string, Record<string, string>> = {
 
     // Manual editor (Add Section)
     "editor.addSection": "添加模块",
+
+    // Section default titles
+    "section.basics": "个人信息",
+    "section.overview": "概述",
+    "section.experience": "经历",
+    "section.education": "教育",
+    "section.skills": "技能",
+    "section.projects": "项目",
+    "section.certificates": "证书",
+    "section.publications": "出版物",
+    "section.languages": "语言",
+    "section.honors": "荣誉奖项",
+    "section.hobbies": "兴趣爱好",
+    "section.volunteers": "志愿经历",
 
     // Custom section item fields
     "custom.name": "名称",

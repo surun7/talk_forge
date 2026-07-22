@@ -129,12 +129,6 @@ const FONT_FAMILIES: Record<string, string> = {
   "zcool-xiaowei": "'ZCOOL XiaoWei', 'Noto Serif SC', serif",
 };
 
-function label(resume: Resume, key: string, fallback: string): string {
-  const labels = resume.basics.sectionLabels as
-    | Record<string, string>
-    | undefined;
-  return (labels && labels[key]) || fallback;
-}
 function hidden(resume: Resume, key: string) {
   return (resume.basics.hiddenSections || []).includes(key);
 }
@@ -208,6 +202,10 @@ function ResumeContent({
   sectionOrder: string[];
 }) {
   const { t } = useLocale();
+  function sectionLabel(key: string): string {
+    const labels = resume.basics.sectionLabels as Record<string, string> | undefined;
+    return (labels && labels[key]) || t("section." + key);
+  }
   const {
     basics,
     experience,
@@ -234,7 +232,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "overview", "file-text")}
-              title={label(resume, "overview", "OVERVIEW")}
+              title={sectionLabel("overview")}
               accent={a}
             />
             <div className="text-[1em] text-slate-600 leading-relaxed">
@@ -250,7 +248,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "experience", "briefcase")}
-              title={label(resume, "experience", "EXPERIENCE")}
+              title={sectionLabel("experience")}
               accent={a}
             />
             {experience.map((exp) => (
@@ -315,7 +313,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "education", "graduation-cap")}
-              title={label(resume, "education", "EDUCATION")}
+              title={sectionLabel("education")}
               accent={a}
             />
             {education.map((edu) => (
@@ -352,7 +350,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "skills", "wrench")}
-              title={label(resume, "skills", "SKILLS")}
+              title={sectionLabel("skills")}
               accent={a}
             />
             {skills.map((cat) => (
@@ -382,7 +380,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "projects", "folder-git")}
-              title={label(resume, "projects", "PROJECTS")}
+              title={sectionLabel("projects")}
               accent={a}
             />
             {projects.map((proj) => (
@@ -445,7 +443,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "certificates", "award")}
-              title={label(resume, "certificates", "CERTIFICATES")}
+              title={sectionLabel("certificates")}
               accent={a}
             />
             {certificates.map((cert) => (
@@ -498,7 +496,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "publications", "book-open")}
-              title={label(resume, "publications", "PUBLICATIONS")}
+              title={sectionLabel("publications")}
               accent={a}
             />
             {publications.map((pub) => (
@@ -542,7 +540,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "languages", "languages")}
-              title={label(resume, "languages", "LANGUAGES")}
+              title={sectionLabel("languages")}
               accent={a}
             />
             <div className="flex flex-wrap gap-x-6 gap-y-1">
@@ -565,7 +563,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "honors", "award")}
-              title={label(resume, "honors", "HONORS & AWARDS")}
+              title={sectionLabel("honors")}
               accent={a}
             />
             {honors.map((h) => (
@@ -599,7 +597,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "hobbies", "heart")}
-              title={label(resume, "hobbies", "HOBBIES & INTERESTS")}
+              title={sectionLabel("hobbies")}
               accent={a}
             />
             <div className="flex flex-wrap gap-1">
@@ -622,7 +620,7 @@ function ResumeContent({
           <section className="mb-5">
             <SectionHeader
               icon={sectionIcon(resume, "volunteers", "heart-handshake")}
-              title={label(resume, "volunteers", "VOLUNTEERING")}
+              title={sectionLabel("volunteers")}
               accent={a}
             />
             {volunteers.map((v) => (

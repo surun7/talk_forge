@@ -26,7 +26,7 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
     const h = resume.basics.hiddenSections || [];
     onChange({ ...resume, basics: { ...resume.basics, hiddenSections: h.includes(k) ? h.filter(x => x !== k) : [...h, k] } });
   };
-  const sTitle = (k: string, f: string) => ((resume.basics.sectionLabels || {}) as Record<string, string>)[k] ?? f;
+  const sTitle = (k: string, f: string) => ((resume.basics.sectionLabels || {}) as Record<string, string>)[k] ?? t("section." + k);
   const sLabel = (k: string, v: string) => {
     const l = (resume.basics.sectionLabels || {}) as Record<string, string>;
     onChange({ ...resume, basics: { ...resume.basics, sectionLabels: { ...l, [k]: v } } });
