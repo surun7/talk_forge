@@ -60,13 +60,14 @@ export const skillCategorySchema = z.object({
 export const projectItemSchema = z.object({
   id: z.string(),
   name: z.string(),
-  role: z.string(),
-  startDate: z.string(),
-  endDate: z.string(),
-  description: z.string(),
-  url: z.string().url().or(z.literal("")),
-  technologies: z.array(z.string()),
-});
+  role: z.string().default(""),
+  affiliation: z.string().default(""),
+  startDate: z.string().default(""),
+  endDate: z.string().default(""),
+  description: z.string().default(""),
+  url: z.string().url().or(z.literal("")).default(""),
+  technologies: z.array(z.string()).default([]),
+}).passthrough();
 
 export const certificateItemSchema = z.object({
   id: z.string(),
@@ -120,6 +121,7 @@ export const volunteerItemSchema = z.object({
 export const customItemSchema = z.object({
   id: z.string(),
   name: z.string().default(""),
+  role: z.string().default(""),
   affiliation: z.string().default(""),
   startDate: z.string().default(""),
   endDate: z.string().default(""),
@@ -269,6 +271,7 @@ export function createTemplateResume(): Resume {
         id: "tpl_proj_1",
         name: "Project Name",
         role: "Developer",
+        affiliation: "",
         startDate: "2022-01",
         endDate: "2022-06",
         description: "Brief description of the project, its purpose, and your role.",
@@ -391,6 +394,7 @@ export function createChineseTemplateResume(): Resume {
         id: "zh_tpl_proj_1",
         name: "项目名称",
         role: "开发者",
+        affiliation: "",
         startDate: "2022-01",
         endDate: "2022-06",
         description: "简要描述项目内容、目标以及你的角色。",

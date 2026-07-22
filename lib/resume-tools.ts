@@ -354,6 +354,7 @@ export function makeAddProject(store: ResumeStore) {
     inputSchema: z.object({
       name: z.string(),
       role: z.string().optional(),
+      affiliation: z.string().optional(),
       startDate: z.string().optional(),
       endDate: z.string().optional(),
       description: z.string(),
@@ -365,6 +366,7 @@ export function makeAddProject(store: ResumeStore) {
         id: nextId(),
         name: args.name,
         role: args.role ?? "",
+        affiliation: args.affiliation ?? "",
         startDate: args.startDate ?? "",
         endDate: args.endDate ?? "",
         description: args.description,
@@ -383,6 +385,7 @@ export function makeUpdateProject(store: ResumeStore) {
       id: z.string(),
       name: z.string().optional(),
       role: z.string().optional(),
+      affiliation: z.string().optional(),
       startDate: z.string().optional(),
       endDate: z.string().optional(),
       description: z.string().optional(),
@@ -727,6 +730,7 @@ export function makeAddCustomSectionItem(store: ResumeStore) {
     inputSchema: z.object({
       sectionId: z.string(),
       name: z.string(),
+      role: z.string().optional(),
       affiliation: z.string().optional(),
       startDate: z.string().optional(),
       endDate: z.string().optional(),
@@ -735,7 +739,7 @@ export function makeAddCustomSectionItem(store: ResumeStore) {
     execute: async (args) => {
       const section = store.current.customSections.find((s) => s.id === args.sectionId);
       if (!section) return `Custom section ${args.sectionId} not found.`;
-      section.items.push({ id: nextId(), name: args.name, affiliation: args.affiliation || "", startDate: args.startDate || "", endDate: args.endDate || "", description: args.description || "" });
+      section.items.push({ id: nextId(), name: args.name, role: args.role || "", affiliation: args.affiliation || "", startDate: args.startDate || "", endDate: args.endDate || "", description: args.description || "" });
       return `Item "${args.name}" added to "${section.title}".`;
     },
   });
@@ -747,6 +751,7 @@ export function makeUpdateCustomSectionItem(store: ResumeStore) {
     inputSchema: z.object({
       itemId: z.string(),
       name: z.string().optional(),
+      role: z.string().optional(),
       affiliation: z.string().optional(),
       startDate: z.string().optional(),
       endDate: z.string().optional(),

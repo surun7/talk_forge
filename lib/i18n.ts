@@ -86,6 +86,15 @@ export const translations: Record<string, Record<string, string>> = {
     // Manual editor (Add Section)
     "editor.addSection": "Add Section",
 
+    // Custom section item fields
+    "custom.name": "Name",
+    "custom.role": "Role",
+    "custom.affiliation": "Affiliation",
+    "custom.startDate": "Start Date",
+    "custom.endDate": "End Date",
+    "custom.description": "Description",
+    "custom.addItem": "Add Item",
+
     // Section field labels
     "basics.uploadPhoto": "Upload Photo",
     "basics.changePhoto": "Change Photo",
@@ -145,6 +154,7 @@ export const translations: Record<string, Record<string, string>> = {
     "projects.newItem": "New Project",
     "projects.name": "Name",
     "projects.role": "Role",
+    "projects.affiliation": "Affiliation",
     "projects.url": "URL",
     "projects.startDate": "Start Date",
     "projects.endDate": "End Date",
@@ -291,6 +301,15 @@ export const translations: Record<string, Record<string, string>> = {
     // Manual editor (Add Section)
     "editor.addSection": "添加模块",
 
+    // Custom section item fields
+    "custom.name": "名称",
+    "custom.role": "角色",
+    "custom.affiliation": "所属机构",
+    "custom.startDate": "开始日期",
+    "custom.endDate": "结束日期",
+    "custom.description": "描述",
+    "custom.addItem": "添加项目",
+
     // Section field labels
     "basics.uploadPhoto": "上传照片",
     "basics.changePhoto": "更换照片",
@@ -350,6 +369,7 @@ export const translations: Record<string, Record<string, string>> = {
     "projects.newItem": "新项目",
     "projects.name": "名称",
     "projects.role": "角色",
+    "projects.affiliation": "所属机构",
     "projects.url": "链接",
     "projects.startDate": "开始日期",
     "projects.endDate": "结束日期",
