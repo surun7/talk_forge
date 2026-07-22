@@ -514,10 +514,12 @@ function ResumeContent({
                     {pub.date}
                   </span>
                 </div>
-                <p className="text-[1em] text-slate-500">
-                  {pub.author}{(pub as any).author && ((pub as any).publisher || (pub as any).journal) ? " \u2014 " : ""}
-                  {(pub as any).publisher || (pub as any).journal || ""}
-                </p>
+                {(pub.author || pub.publisher) && (
+                  <p className="text-[1em] text-slate-500">
+                    {pub.author}{pub.author && pub.publisher ? " \u2014 " : ""}
+                    {pub.publisher}
+                  </p>
+                )}
                 {pub.url && (
                   <p className="text-[0.833em] text-slate-400 mt-0.5">
                     <a href={pub.url} target="_blank" rel="noopener noreferrer" className="a-link underline break-all">{pub.url}</a>
