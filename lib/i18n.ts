@@ -168,6 +168,8 @@ export const translations: Record<string, Record<string, string>> = {
     "certificates.name": "Name",
     "certificates.issuer": "Issuer",
     "certificates.date": "Date",
+    "certificates.startDate": "Start Date",
+    "certificates.endDate": "End Date",
     "certificates.url": "URL",
     "certificates.description": "Description",
     "certificates.longTerm": "Permanent",
@@ -181,6 +183,7 @@ export const translations: Record<string, Record<string, string>> = {
     "publications.publisher": "Publisher",
     "publications.date": "Date",
     "publications.url": "URL",
+    "publications.description": "Description",
 
     // Languages section
     "languages.add": "Add Language",
@@ -383,6 +386,8 @@ export const translations: Record<string, Record<string, string>> = {
     "certificates.name": "名称",
     "certificates.issuer": "颁发机构",
     "certificates.date": "日期",
+    "certificates.startDate": "开始日期",
+    "certificates.endDate": "结束日期",
     "certificates.url": "链接",
     "certificates.description": "描述",
     "certificates.longTerm": "长期有效",
@@ -396,6 +401,7 @@ export const translations: Record<string, Record<string, string>> = {
     "publications.publisher": "出版商",
     "publications.date": "日期",
     "publications.url": "链接",
+    "publications.description": "描述",
 
     // Languages section
     "languages.add": "添加语言",
