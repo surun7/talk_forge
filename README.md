@@ -186,6 +186,30 @@ public/fonts/                   # 16 font families as local TTF files
 - **Zod schemas** for runtime data validation on both client and server
 - **No `any` types** in storage or tool definitions — fully typed
 
+## Development Rules
+
+### ⚠️ Schema Backward Compatibility
+
+**Violating this destroys user data.** `lib/storage.ts` uses `zod.safeParse()` — if it fails, the project returns `null` and auto-save overwrites the original data.
+
+1. **Every new schema field must use `.default()` or `.optional()`** — `z.string()` without a default breaks old data
+2. **When renaming fields, use `.passthrough()` + fallback access** — e.g. `value={item.startDate || (item as any).time || ""}`
+3. **Never make a field required retroactively** — old data won't have it
+4. **Test mentally:** "Will data from 2 weeks ago still parse?"
+
+### AI Tools Sync Checklist
+
+Every schema change must sync these 7 places:
+```
+□ schema.ts         — field with .default()
+□ Editor            — input renders
+□ Preview           — conditional display
+□ makeAddXxx        — inputSchema + execute
+□ makeUpdateXxx     — inputSchema + Object.assign
+□ listItems summary — includes field
+□ i18n              — en + zh strings
+```
+
 ## License
 
 MIT
