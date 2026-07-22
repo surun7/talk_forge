@@ -333,7 +333,7 @@ function ResumeContent({
                   </span>
                 </div>
                 <p className="text-[1em] text-slate-500">
-                  {edu.degree}{edu.field && <><span className="inline-block w-8" />{edu.field}</>}
+                  {edu.degree}{edu.field && <> \u2014 {edu.field}</>}
                 </p>
                 {edu.description && (
                   <div className="text-[1em] mt-0.5 text-slate-600">
@@ -402,7 +402,7 @@ function ResumeContent({
                 <div className="flex justify-between items-baseline">
                   <p className="text-[1em] text-slate-500">
                     {proj.role}
-                    {proj.role && proj.affiliation && <span className="inline-block w-8" />}
+                    {proj.role && proj.affiliation && " \u2014 "}
                     {proj.affiliation}
                   </p>
                   {proj.url && (
@@ -756,7 +756,7 @@ function ResumeContent({
                         {(item.role || item.affiliation) && (
                           <p className="text-[1em] text-slate-500">
                             {item.role}
-                            {item.role && item.affiliation && <span className="inline-block w-8" />}
+                            {item.role && item.affiliation && " \u2014 "}
                             {item.affiliation}
                           </p>
                         )}
@@ -789,7 +789,7 @@ function ResumeContent({
                     {(item.role || item.affiliation) && (
                       <p className="text-[1em] text-slate-500">
                         {item.role}
-                        {item.role && item.affiliation && <span className="inline-block w-8" />}
+                        {item.role && item.affiliation && " \u2014 "}
                         {item.affiliation}
                       </p>
                     )}
