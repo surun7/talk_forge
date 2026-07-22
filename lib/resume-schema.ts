@@ -12,7 +12,7 @@ export const basicsSchema = z.object({
   phone: z.string(),
   location: z.string(),
   birth: z.string(),
-  wechat: z.string(),
+  wechat: z.string().default(""),
   photo: z.string(),
   font: z.string(),
   fontSize: z.number(),
