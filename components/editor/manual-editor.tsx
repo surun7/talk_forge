@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import type { Resume } from "@/lib/resume-schema";
 import { nextId } from "@/lib/resume-schema";
 import { Plus, Star, Trash2 } from "lucide-react";
@@ -35,10 +35,16 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
   };
   const sIconEl = (k: string, f: string) => ICON_MAP[sIcon(k, f) as string] || ICON_MAP[f];
   const upBasic = (f: string, v: string) => onChange({ ...resume, basics: { ...resume.basics, [f]: v } });
+  const resumeRef = useRef(resume);
+  useEffect(() => { resumeRef.current = resume; }, [resume]);
+
   const addL = (k: keyof Resume, item: any) => {
-    console.log("[ManualEditor] addL called", k, item.id, "current customSections count:", resume.customSections.length);
-    onChange({ ...resume, [k]: [...(resume[k] as any[]), item] } as Resume);
+    const r = resumeRef.current;
+    console.log("[ManualEditor] addL called", k, item.id, "current customSections count:", r.customSections.length);
+    onChange({ ...r, [k]: [...(r[k] as any[]), item] } as Resume);
   };
+
+  const addingSectionRef = useRef(false);
 
   function moveCsItem(idx: number, dir: number) {
     const arr = [...resume.customSections];
@@ -105,7 +111,14 @@ export default function ManualEditor({ resume, onChange, onOpenPhotoModal, secti
         }
         return null;
       })}
-      <button onClick={() => { const id = "cs_" + nextId(); console.log("[ManualEditor] Add Section clicked, new id:", id); addL("customSections", { id, title: "NEW SECTION", icon: "star", description: "", items: [] }); }} className={btnCls}><Plus className="w-3 h-3" />{t("editor.addSection")}</button>
+      <button onClick={() => {
+        if (addingSectionRef.current) return;
+        addingSectionRef.current = true;
+        setTimeout(() => { addingSectionRef.current = false; }, 300);
+        const id = "cs_" + nextId();
+        console.log("[ManualEditor] Add Section clicked, new id:", id);
+        addL("customSections", { id, title: "NEW SECTION", icon: "star", description: "", items: [] });
+      }} className={btnCls}><Plus className="w-3 h-3" />{t("editor.addSection")}</button>
     </div>
   );
 }
