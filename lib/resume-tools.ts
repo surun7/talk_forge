@@ -53,7 +53,7 @@ const ICON_KEYS_FOR_TOOL = ["briefcase","graduation-cap","wrench","folder-git","
 
 export function makeUpdateBasics(store: ResumeStore) {
   return tool({
-    description: "Update basics: name, title, email, phone, location, birth, summary, section labels, hidden sections, font, font size, accent color, section icons. Font/accentColor/sectionIcons must be chosen from available options — call listItems first to see current values.",
+    description: "Update basics: name, title, email, phone, location, birth, wechat, summary, section labels, hidden sections, font, font size, accent color, section icons. Font/accentColor/sectionIcons must be chosen from available options — call listItems first to see current values.",
     inputSchema: z.object({
       name: z.string().optional(),
       title: z.string().optional(),
@@ -61,6 +61,7 @@ export function makeUpdateBasics(store: ResumeStore) {
       phone: z.string().optional(),
       location: z.string().optional(),
       birth: z.string().optional(),
+      wechat: z.string().optional(),
       summary: z.string().optional(),
       sectionLabels: z.record(z.string(), z.string()).optional(),
       hiddenSections: z.array(z.string()).optional(),
@@ -76,6 +77,7 @@ export function makeUpdateBasics(store: ResumeStore) {
       if (args.phone !== undefined) store.current.basics.phone = args.phone;
       if (args.location !== undefined) store.current.basics.location = args.location;
       if (args.birth !== undefined) store.current.basics.birth = args.birth;
+      if (args.wechat !== undefined) store.current.basics.wechat = args.wechat;
       if (args.summary !== undefined) store.current.basics.summary = sanitizeHtml(args.summary);
       if (args.sectionLabels !== undefined) store.current.basics.sectionLabels = { ...store.current.basics.sectionLabels, ...args.sectionLabels };
       if (args.hiddenSections !== undefined) store.current.basics.hiddenSections = args.hiddenSections;
