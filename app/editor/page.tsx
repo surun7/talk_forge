@@ -171,7 +171,7 @@ function EditorContent() {
     updateResume((prev: Resume) => ({ ...prev, basics: { ...prev.basics, photo: dataUrl } }));
   }, [updateResume]);
 
-  const handleAddCustomSection = useCallback((id: string) => { setSectionOrder(prev => [...prev, id]); }, []);
+  const handleAddCustomSection = useCallback((id: string) => { setSectionOrder(prev => prev.includes(id) ? prev : [...prev, id]); }, []);
 
   const prevCsIdsRef = useRef(new Set(resume.customSections.map(s => s.id)));
   useEffect(() => { prevCsIdsRef.current = new Set(resume.customSections.map(s => s.id)); }, [resume.customSections]);
