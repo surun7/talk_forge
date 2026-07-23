@@ -221,17 +221,17 @@ export default function Toolbar({
           </button>
         </div>
         {/* Line height */}
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1.5">
           <AlignJustify className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-          <button onClick={() => onLineHeightChange(Math.max(1.0, lineHeight - 0.1))}
-            className="h-8 w-7 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <Minus className="w-3 h-3" />
-          </button>
-          <span className="w-10 text-center text-xs tabular-nums text-slate-700 dark:text-slate-200 font-mono">{lineHeight.toFixed(1)}</span>
-          <button onClick={() => onLineHeightChange(Math.min(2.5, lineHeight + 0.1))}
-            className="h-8 w-7 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <Plus className="w-3 h-3" />
-          </button>
+          <PillSelect value={lineHeight.toFixed(1)} onChange={v => onLineHeightChange(parseFloat(v))}
+            options={[
+              { value: "1.0", label: "Tight 1.0" },
+              { value: "1.25", label: "Snug 1.25" },
+              { value: "1.5", label: "Normal 1.5" },
+              { value: "1.75", label: "Relaxed 1.75" },
+              { value: "2.0", label: "Loose 2.0" },
+              { value: "2.5", label: "Wide 2.5" },
+            ]} className="w-28" />
         </div>
         {/* Accent color */}
         <div className="flex items-center gap-1.5">
@@ -310,15 +310,15 @@ export default function Toolbar({
               {/* Line height */}
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-[10px] text-slate-400 uppercase w-8">Spacing</span>
-                <button onClick={() => onLineHeightChange(Math.max(1.0, lineHeight - 0.1))}
-                  className="h-8 w-7 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-                  <Minus className="w-3 h-3" />
-                </button>
-                <span className="w-10 text-center text-xs tabular-nums text-slate-700 dark:text-slate-200 font-mono">{lineHeight.toFixed(1)}</span>
-                <button onClick={() => onLineHeightChange(Math.min(2.5, lineHeight + 0.1))}
-                  className="h-8 w-7 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-                  <Plus className="w-3 h-3" />
-                </button>
+                <PillSelect value={lineHeight.toFixed(1)} onChange={v => onLineHeightChange(parseFloat(v))}
+                  options={[
+                    { value: "1.0", label: "Tight 1.0" },
+                    { value: "1.25", label: "Snug 1.25" },
+                    { value: "1.5", label: "Normal 1.5" },
+                    { value: "1.75", label: "Relaxed 1.75" },
+                    { value: "2.0", label: "Loose 2.0" },
+                    { value: "2.5", label: "Wide 2.5" },
+                  ]} className="w-32" />
               </div>
               {/* Accent color */}
               <div className="flex items-center gap-2 mb-3">
