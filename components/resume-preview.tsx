@@ -502,7 +502,7 @@ function ResumeContent({
             {publications.map((pub) => (
               <div
                 key={pub.id}
-                className="pb-0 mb-3 pl-3 border-l-2 a-border border-b-2 border-slate-400 dark:border-slate-500"
+                className="pb-3 mb-3 pl-3 border-l-2 a-border border-b-2 border-slate-400 dark:border-slate-500"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
