@@ -52,7 +52,7 @@ function DashboardDownloader({ resume, sectionOrder, fileName, onDone }: { resum
   }, []);
 
   return (
-    <div ref={containerRef} style={{ position: "absolute", left: "-9999px", top: 0, width: "210mm" }}>
+    <div ref={containerRef} style={{ position: "fixed", left: 0, top: 0, width: "210mm", visibility: "hidden", zIndex: -1 }}>
       <ResumePreview resume={resume} sectionOrder={sectionOrder} />
     </div>
   );
