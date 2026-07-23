@@ -446,46 +446,38 @@ function ResumeContent({
               title={sectionLabel("certificates")}
               accent={a}
             />
-            {certificates.map((cert) => (
-              <div
-                key={cert.id}
-                className="pb-0 mb-3 pl-3 border-l-[3px] a-border border-b-[3px] border-slate-400 dark:border-slate-500"
-              >
-                <div className="flex justify-between items-baseline">
-                  <span className="font-bold text-[1em] text-slate-800">
-                    {cert.name}
-                  </span>
-                  <span className="text-[0.917em] text-slate-500 not-italic">
-                    {(cert as any).startDate || (cert as any).date}
-                    {cert.longTerm
-                      ? " — " + t("certificates.longTerm")
-                      : cert.endDate
-                        ? " — " + cert.endDate
-                        : ((cert as any).startDate || (cert as any).date) ? " — " + t("certificates.present") : ""}
-                  </span>
-                </div>
-                {(cert.issuer || cert.url) && (
-                  <div className="flex justify-between items-baseline">
+            {certificates.length > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                {certificates.map((cert) => (
+                  <div
+                    key={cert.id}
+                    className="pb-1 pl-2 border-l-[3px] a-border"
+                  >
+                    <span className="font-bold text-[1em] text-slate-800 block mb-0.5">
+                      {cert.name}
+                    </span>
                     {cert.issuer && <p className="text-[1em] text-slate-500">{cert.issuer}</p>}
+                    <span className="text-[0.917em] text-slate-500 not-italic block mt-0.5">
+                      {(cert as any).startDate || (cert as any).date}
+                      {cert.longTerm
+                        ? " — " + t("certificates.longTerm")
+                        : cert.endDate
+                          ? " — " + cert.endDate
+                          : ((cert as any).startDate || (cert as any).date) ? " — " + t("certificates.present") : ""}
+                    </span>
                     {cert.url && (
-                      <a
-                        href={cert.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="a-link underline text-[0.833em]"
-                      >
-                        {cert.url}
-                      </a>
+                      <a href={cert.url} target="_blank" rel="noopener noreferrer"
+                        className="a-link underline break-all text-[0.833em] block mt-0.5">{cert.url}</a>
+                    )}
+                    {cert.description && (
+                      <div className="text-[1em] mt-0.5 text-slate-600">
+                        {renderRichText(cert.description)}
+                      </div>
                     )}
                   </div>
-                )}
-                {cert.description && (
-                  <div className="text-[1em] mt-0.5 text-slate-600">
-                    {renderRichText(cert.description)}
-                  </div>
-                )}
+                ))}
               </div>
-            ))}
+            )}
           </section>
         )}
       </>
