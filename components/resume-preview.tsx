@@ -224,7 +224,7 @@ function ResumeContent({
   const a = ACCENT_HEX[basics.accentColor] ?? ACCENT_HEX.indigo!;
   const al = ACCENT_LIGHT[basics.accentColor] ?? ACCENT_LIGHT.indigo!;
   const ab = ACCENT_BORDER[basics.accentColor] ?? ACCENT_BORDER.indigo!;
-  const accentCSS = `[data-a] .a-icon{color:${a}}[data-a] .a-link{color:${a}}[data-a] .a-bullet{color:${a}}[data-a] .a-border{border-color:${a}}[data-a] .a-tag{background:${al};color:${a}}[data-a] .a-photo{background:${al}}[data-a] .a-photo-icon{color:${ab}}`;
+  const accentCSS = `[data-a] .a-icon{color:${a}}[data-a] .a-link{color:${a}}[data-a] .a-bullet{color:${a}}[data-a] .a-border{border-color:${a}cc}[data-a] .a-tag{background:${al};color:${a}}[data-a] .a-photo{background:${al}}[data-a] .a-photo-icon{color:${ab}}`;
   const previewSectionMap: Record<string, React.ReactNode> = {
     overview: (
       <>
