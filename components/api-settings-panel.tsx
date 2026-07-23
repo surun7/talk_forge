@@ -14,10 +14,10 @@ interface CustomProvider {
 }
 
 const BUILTIN_KEYS = [
-  { id: "openai", label: "OpenAI", envKey: "talk_forge_api_openai", defaultModel: "gpt-5.4-pro-thinking" },
-  { id: "anthropic", label: "Anthropic", envKey: "talk_forge_api_anthropic", defaultModel: "claude-sonnet-4.6" },
+  { id: "openai", label: "OpenAI", envKey: "talk_forge_api_openai", defaultModel: "gpt-5.6-sol" },
+  { id: "anthropic", label: "Anthropic", envKey: "talk_forge_api_anthropic", defaultModel: "claude-opus-4.8" },
   { id: "google", label: "Google Gemini", envKey: "talk_forge_api_google", defaultModel: "gemini-3.1-pro" },
-  { id: "kimi", label: "Kimi (Moonshot)", envKey: "talk_forge_api_kimi", defaultBaseURL: "https://api.moonshot.cn/v1", defaultModel: "kimi-k2.6" },
+  { id: "kimi", label: "Kimi (Moonshot)", envKey: "talk_forge_api_kimi", defaultBaseURL: "https://api.moonshot.cn/v1", defaultModel: "kimi-k3" },
   { id: "minimax", label: "MiniMax", envKey: "talk_forge_api_minimax", defaultBaseURL: "https://api.minimax.chat/v1", defaultModel: "minimax-m3" },
   { id: "glm", label: "Zhipu GLM", envKey: "talk_forge_api_glm", defaultBaseURL: "https://open.bigmodel.cn/api/paas/v4", defaultModel: "glm-5.2" },
   { id: "deepseek", label: "DeepSeek", envKey: "talk_forge_api_deepseek", defaultBaseURL: "https://api.deepseek.com/v1", defaultModel: "deepseek-v4-pro" },
