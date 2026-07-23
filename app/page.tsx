@@ -28,14 +28,15 @@ function DashboardDownloader({ resume, sectionOrder, fileName, onDone }: { resum
     if (doneRef.current) return;
     doneRef.current = true;
     const generate = async () => {
-      // Wait for render
-      await new Promise(r => setTimeout(r, 500));
+      // Wait for fonts and pagination — ResumePreview renders pages via useEffect + requestAnimationFrame + document.fonts.ready
+      try { await document.fonts.ready; } catch {}
+      await new Promise(r => setTimeout(r, 1000));
       try {
         const [html2canvasMod, jsPDFMod] = await Promise.all([import("html2canvas-pro"), import("jspdf")]);
         const html2canvas = html2canvasMod.default;
         const { jsPDF } = jsPDFMod;
         const raw = document.querySelectorAll<HTMLElement>('[data-page-index]');
-        const pages = Array.from(raw).filter(p => p.getBoundingClientRect().height > 700);
+        const pages = Array.from(raw).filter(p => p.getBoundingClientRect().height > 100);
         if (pages.length === 0) { onDone(); return; }
         const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
         for (let i = 0; i < pages.length; i++) {
@@ -52,8 +53,10 @@ function DashboardDownloader({ resume, sectionOrder, fileName, onDone }: { resum
   }, []);
 
   return (
-    <div ref={containerRef} style={{ position: "fixed", left: 0, top: 0, width: "210mm", visibility: "hidden", zIndex: -1 }}>
-      <ResumePreview resume={resume} sectionOrder={sectionOrder} />
+    <div ref={containerRef} style={{ position: "fixed", inset: 0, zIndex: 99999, background: "#fff", overflow: "auto" }}>
+      <div style={{ display: "flex", justifyContent: "center", padding: 16 }}>
+        <ResumePreview resume={resume} sectionOrder={sectionOrder} />
+      </div>
     </div>
   );
 }
