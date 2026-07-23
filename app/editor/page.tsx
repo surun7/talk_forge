@@ -250,9 +250,11 @@ function EditorContent() {
         projectName={projectName}
         font={resume.basics.font || "lora"}
         fontSize={resume.basics.fontSize || 12}
+        lineHeight={resume.basics.lineHeight || 1.5}
         accentColor={resume.basics.accentColor || "indigo"}
         onFontChange={(f: string) => updateResume((prev: Resume) => ({ ...prev, basics: { ...prev.basics, font: f } }))}
         onFontSizeChange={(s: number) => updateResume((prev: Resume) => ({ ...prev, basics: { ...prev.basics, fontSize: s } }))}
+        onLineHeightChange={(lh: number) => updateResume((prev: Resume) => ({ ...prev, basics: { ...prev.basics, lineHeight: lh } }))}
         onAccentColorChange={(c: string) => updateResume((prev: Resume) => ({ ...prev, basics: { ...prev.basics, accentColor: c } }))}
         editMode={editMode}
         onEditModeChange={setEditMode}

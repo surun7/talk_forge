@@ -53,7 +53,7 @@ const ICON_KEYS_FOR_TOOL = ["briefcase","graduation-cap","wrench","folder-git","
 
 export function makeUpdateBasics(store: ResumeStore) {
   return tool({
-    description: "Update basics: name, title, email, phone, location, birth, wechat, summary, section labels, hidden sections, font, font size, accent color, section icons. Font/accentColor/sectionIcons must be chosen from available options — call listItems first to see current values.",
+    description: "Update basics: name, title, email, phone, location, birth, wechat, summary, section labels, hidden sections, font, font size, line height, accent color, section icons. Font/accentColor/sectionIcons must be chosen from available options — call listItems first to see current values.",
     inputSchema: z.object({
       name: z.string().optional(),
       title: z.string().optional(),
@@ -67,6 +67,7 @@ export function makeUpdateBasics(store: ResumeStore) {
       hiddenSections: z.array(z.string()).optional(),
       font: z.enum(FONT_OPTIONS).optional(),
       fontSize: z.number().int().min(8).max(18).optional(),
+      lineHeight: z.number().min(1.0).max(2.5).optional(),
       accentColor: z.enum(COLOR_OPTIONS).optional(),
       sectionIcons: z.record(z.string(), z.string()).optional(),
     }),
@@ -83,6 +84,7 @@ export function makeUpdateBasics(store: ResumeStore) {
       if (args.hiddenSections !== undefined) store.current.basics.hiddenSections = args.hiddenSections;
       if (args.font !== undefined) store.current.basics.font = args.font;
       if (args.fontSize !== undefined) store.current.basics.fontSize = args.fontSize;
+      if (args.lineHeight !== undefined) store.current.basics.lineHeight = args.lineHeight;
       if (args.accentColor !== undefined) store.current.basics.accentColor = args.accentColor;
       if (args.sectionIcons !== undefined) {
         const validKeys = SECTION_KEYS as readonly string[];
