@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { useResumePDF } from "@/lib/use-resume-pdf";
 import { useLocale } from "@/lib/locale-provider";
 import {
-  Download, Plus, Sparkles, Sun, Moon, Minus, CaseSensitive, Bot, Pencil, ChevronDown, Loader2, Undo2, Redo2, ArrowLeft, Settings, AlignJustify, Text,
+  Download, Plus, Sparkles, Sun, Moon, Minus, CaseSensitive, Bot, Pencil, ChevronDown, Loader2, Undo2, Redo2, ArrowLeft, Settings, AlignJustify,
 } from "lucide-react";
 
 type EditMode = "agent" | "manual";
@@ -210,7 +210,7 @@ export default function Toolbar({
             loading={isFontLoading} className="w-32" />
         </div>
         <div className="flex items-center gap-0.5">
-          <Text className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span className="w-3.5 h-3.5 flex items-center justify-center text-[10px] font-black text-slate-400 leading-none shrink-0 select-none">A</span>
           <button onClick={() => onFontSizeChange(Math.max(8, fontSize - 1))}
             className="h-8 w-7 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <Minus className="w-3 h-3" />
@@ -297,7 +297,7 @@ export default function Toolbar({
               </div>
               {/* Font size */}
               <div className="flex items-center gap-2 mb-3">
-                <Text className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="w-3.5 h-3.5 flex items-center justify-center text-[10px] font-black text-slate-400 leading-none shrink-0 select-none">A</span>
                 <button onClick={() => onFontSizeChange(Math.max(8, fontSize - 1))}
                   className="h-8 w-7 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
                   <Minus className="w-3 h-3" />
