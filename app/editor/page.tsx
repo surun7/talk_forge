@@ -246,7 +246,7 @@ function EditorContent() {
       <Toolbar
         onNewResume={handleNewResume}
         previewRef={previewRef}
-        fileName={resume.basics.name || undefined}
+        fileName={projectName || resume.basics.name || undefined}
         projectName={projectName}
         font={resume.basics.font || "lora"}
         fontSize={resume.basics.fontSize || 12}
