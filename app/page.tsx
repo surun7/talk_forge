@@ -21,16 +21,15 @@ function useTheme() {
 }
 
 function DashboardDownloader({ resume, sectionOrder, fileName, onDone }: { resume: any; sectionOrder: string[]; fileName: string; onDone: () => void }) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
   const doneRef = useRef(false);
 
   useEffect(() => {
     if (doneRef.current) return;
     doneRef.current = true;
     const generate = async () => {
-      // Wait for fonts and pagination — ResumePreview renders pages via useEffect + requestAnimationFrame + document.fonts.ready
       try { await document.fonts.ready; } catch {}
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 800));
       try {
         const [html2canvasMod, jsPDFMod] = await Promise.all([import("html2canvas-pro"), import("jspdf")]);
         const html2canvas = html2canvasMod.default;
@@ -38,12 +37,15 @@ function DashboardDownloader({ resume, sectionOrder, fileName, onDone }: { resum
         const raw = document.querySelectorAll<HTMLElement>('[data-page-index]');
         const pages = Array.from(raw).filter(p => p.getBoundingClientRect().height > 100);
         if (pages.length === 0) { onDone(); return; }
+        const total = pages.length;
+        setProgress(0);
         const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-        for (let i = 0; i < pages.length; i++) {
+        for (let i = 0; i < total; i++) {
           const canvas = await html2canvas(pages[i]!, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", logging: false });
           if (i > 0) pdf.addPage();
           pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, 210, 297);
           canvas.width = 0; canvas.height = 0;
+          setProgress(Math.round(((i + 1) / total) * 100));
         }
         pdf.save(`${(fileName || "").trim() || "resume"}.pdf`);
       } catch (e) { console.error("PDF failed", e); }
@@ -53,9 +55,19 @@ function DashboardDownloader({ resume, sectionOrder, fileName, onDone }: { resum
   }, []);
 
   return (
-    <div ref={containerRef} style={{ position: "fixed", inset: 0, zIndex: 99999, background: "#fff", overflow: "auto" }}>
-      <div style={{ display: "flex", justifyContent: "center", padding: 16 }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 99999 }}>
+      {/* Preview — rendered behind the overlay */}
+      <div style={{ display: "flex", justifyContent: "center", padding: 16, height: "100%", overflow: "auto" }}>
         <ResumePreview resume={resume} sectionOrder={sectionOrder} />
+      </div>
+      {/* Progress overlay */}
+      <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.8)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", gap: 4 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#818cf8", animation: "bounce 0.6s infinite", animationDelay: "0s" }} />
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#818cf8", animation: "bounce 0.6s infinite", animationDelay: "0.15s" }} />
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#818cf8", animation: "bounce 0.6s infinite", animationDelay: "0.3s" }} />
+        </div>
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#334155" }}>{progress}%</span>
       </div>
     </div>
   );
