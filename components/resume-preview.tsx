@@ -254,7 +254,7 @@ function ResumeContent({
             {experience.map((exp) => (
               <div
                 key={exp.id}
-                className="pb-3 mb-3 pl-3 border-l-[4px] a-border"
+                className="pb-3 mb-3 pl-3 border-l-[2px] a-border"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -319,7 +319,7 @@ function ResumeContent({
             {education.map((edu) => (
               <div
                 key={edu.id}
-                className="pb-3 mb-3 pl-3 border-l-[4px] a-border"
+                className="pb-3 mb-3 pl-3 border-l-[2px] a-border"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -386,7 +386,7 @@ function ResumeContent({
             {projects.map((proj) => (
               <div
                 key={proj.id}
-                className="pb-3 mb-3 pl-3 border-l-[4px] a-border"
+                className="pb-3 mb-3 pl-3 border-l-[2px] a-border"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -451,7 +451,7 @@ function ResumeContent({
                 {certificates.map((cert) => (
                   <div
                     key={cert.id}
-                    className="pb-1 pl-2 border-l-[4px] a-border"
+                    className="pb-1 pl-2 border-l-[2px] a-border"
                   >
                     <span className="font-bold text-[1em] text-slate-800 block mb-0.5">
                       {cert.name}
@@ -494,7 +494,7 @@ function ResumeContent({
             {publications.map((pub) => (
               <div
                 key={pub.id}
-                className="pb-3 mb-3 pl-3 border-l-[4px] a-border"
+                className="pb-3 mb-3 pl-3 border-l-[2px] a-border"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -561,7 +561,7 @@ function ResumeContent({
             {honors.map((h) => (
               <div
                 key={h.id}
-                className="pb-3 mb-3 pl-3 border-l-[4px] a-border"
+                className="pb-3 mb-3 pl-3 border-l-[2px] a-border"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -618,7 +618,7 @@ function ResumeContent({
             {volunteers.map((v) => (
               <div
                 key={v.id}
-                className="pb-3 mb-3 pl-3 border-l-[4px] a-border"
+                className="pb-3 mb-3 pl-3 border-l-[2px] a-border"
               >
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-[1em] text-slate-800">
@@ -735,7 +735,7 @@ function ResumeContent({
                 {cs.items.length > 0 && (
                   <div className="space-y-3">
                     {cs.items.map((item: any, i2: number) => (
-                      <div key={item.id + "_" + i2 + "_" + cs.id} className="pb-3 mb-3 pl-3 border-l-[4px] a-border">
+                      <div key={item.id + "_" + i2 + "_" + cs.id} className="pb-3 mb-3 pl-3 border-l-[2px] a-border">
                         <div className="flex justify-between items-baseline">
                           <span className="font-bold text-[1em] text-slate-800">{item.name || (item as any).text}</span>
                           <span className="text-[0.917em] text-slate-500 not-italic">
@@ -768,7 +768,7 @@ function ResumeContent({
             {sec.items.length > 0 && (
               <div className="space-y-3">
                 {sec.items.map((item: any, i2: number) => (
-                  <div key={item.id + "_" + i2 + "_" + sec.id} className="pb-3 mb-3 pl-3 border-l-[4px] a-border">
+                  <div key={item.id + "_" + i2 + "_" + sec.id} className="pb-3 mb-3 pl-3 border-l-[2px] a-border">
                     <div className="flex justify-between items-baseline">
                       <span className="font-bold text-[1em] text-slate-800">{item.name || (item as any).text}</span>
                       <span className="text-[0.917em] text-slate-500 not-italic">
