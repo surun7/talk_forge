@@ -37,6 +37,9 @@ export default function Dashboard() {
   const gridRef = useRef<HTMLDivElement>(null);
   const cardSizeRef = useRef({ w: 0, h: 0 });
   const colsRef = useRef(3);
+  // Touch drag refs
+  const touchDragRef = useRef<{ idx: number; startX: number; startY: number; clone: HTMLElement | null; moved: boolean }>({ idx: -1, startX: 0, startY: 0, clone: null, moved: false });
+  const touchJustEndedRef = useRef(false);
 
   function getCols(): number {
     if (typeof window === "undefined") return 3;
@@ -242,6 +245,45 @@ export default function Dashboard() {
               setDragIndex(null);
               setOverIndex(null);
               isDraggingRef.current = false;
+            }}
+            onTouchMove={e => {
+              if (dragIndex === null) return;
+              e.preventDefault();
+              const t = e.touches[0]!;
+              const dx = t.clientX - touchDragRef.current.startX;
+              const dy = t.clientY - touchDragRef.current.startY;
+              if (Math.abs(dx) > 5 || Math.abs(dy) > 5) touchDragRef.current.moved = true;
+              colsRef.current = getCols();
+              const grid = gridRef.current;
+              if (!grid) return;
+              const rect = grid.getBoundingClientRect();
+              const x = t.clientX - rect.left;
+              const y = t.clientY - rect.top;
+              const { w, h } = cardSizeRef.current;
+              if (!w || !h) return;
+              const cols = colsRef.current;
+              const gap = 16;
+              const col = Math.floor(x / (w + gap));
+              const row = Math.floor(y / (h + gap));
+              const idx = Math.max(0, Math.min(row * cols + col, projects.length - 1));
+              if (idx !== overIndex) setOverIndex(idx);
+            }}
+            onTouchEnd={() => {
+              const dIdx = dragIndex;
+              const oIdx = overIndex;
+              const wasTouchDrag = touchDragRef.current.moved;
+              touchJustEndedRef.current = true;
+              setDragIndex(null);
+              setOverIndex(null);
+              touchDragRef.current = { idx: -1, startX: 0, startY: 0, clone: null, moved: false };
+              if (wasTouchDrag && dIdx !== null && oIdx !== null && dIdx !== oIdx) {
+                const updated = [...projects];
+                const [moved] = updated.splice(dIdx, 1);
+                if (!moved) return;
+                updated.splice(oIdx, 0, moved);
+                setProjects(updated);
+                storage.saveProjectsIndex(updated);
+              }
             }}>
             {projects.map((meta, index) => {
               const tr = cardTransform(index, dragIndex, overIndex);
@@ -261,7 +303,21 @@ export default function Dashboard() {
                   setOverIndex(null);
                   isDraggingRef.current = false;
                 }}
+                onTouchStart={e => {
+                  if (renameId === meta.id) return;
+                  const t = e.touches[0]!;
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  cardSizeRef.current = { w: rect.width, h: rect.height };
+                  colsRef.current = getCols();
+                  touchDragRef.current = { idx: index, startX: t.clientX, startY: t.clientY, clone: null, moved: false };
+                  setDragIndex(index);
+                  setOverIndex(index);
+                }}
                 onClick={() => {
+                  if (touchJustEndedRef.current) {
+                    touchJustEndedRef.current = false;
+                    return;
+                  }
                   if (isDraggingRef.current) {
                     isDraggingRef.current = false;
                     return;

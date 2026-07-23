@@ -927,7 +927,7 @@ export default function ResumePreview({
           className="bg-white shadow-lg shadow-slate-300/50 dark:shadow-black/50 rounded-sm flex-shrink-0 relative"
           style={{
             width: "210mm",
-            height: `${PAGE_MM_H}mm`,
+            ...(pagesNeeded === 1 ? { minHeight: `${PAGE_MM_H}mm`, height: "auto" } : { height: `${PAGE_MM_H}mm` }),
             padding: `${PAD_V}mm ${PAD_H}mm`,
             boxSizing: "border-box",
           }}
@@ -940,9 +940,7 @@ export default function ResumePreview({
           <div
             style={{
               width: `${CONTENT_W_MM}mm`,
-              height: `${clipHeightPx}px`,
-              overflow: "clip",
-              overflowClipMargin: "4px",
+              ...(pagesNeeded === 1 ? {} : { height: `${clipHeightPx}px`, overflow: "clip", overflowClipMargin: "4px" }),
               position: "relative",
             }}
           >
