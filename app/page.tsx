@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Plus, Trash2, Pencil, Check, FileText, Sun, Moon, Languages, Menu, X, GripHorizontal } from "lucide-react";
+import { Sparkles, Plus, Trash2, Pencil, Check, FileText, Sun, Moon, Languages, Menu, X, GripHorizontal, Download } from "lucide-react";
 import { getStorageAdapter, type ProjectMeta } from "@/lib/storage";
 import DashboardSidebar from "@/components/dashboard-sidebar";
 import { useLocale } from "@/lib/locale-provider";
+import ResumePreview from "@/components/resume-preview";
+import { createTemplateResume } from "@/lib/resume-schema";
 
 function useTheme() {
   const [dark, setDark] = useState(false);
@@ -16,6 +18,44 @@ function useTheme() {
     try { localStorage.setItem("talk-forge-theme", next ? "dark" : "light"); } catch {}
   };
   return { dark, toggle };
+}
+
+function DashboardDownloader({ resume, sectionOrder, fileName, onDone }: { resume: any; sectionOrder: string[]; fileName: string; onDone: () => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const doneRef = useRef(false);
+
+  useEffect(() => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    const generate = async () => {
+      // Wait for render
+      await new Promise(r => setTimeout(r, 500));
+      try {
+        const [html2canvasMod, jsPDFMod] = await Promise.all([import("html2canvas-pro"), import("jspdf")]);
+        const html2canvas = html2canvasMod.default;
+        const { jsPDF } = jsPDFMod;
+        const raw = document.querySelectorAll<HTMLElement>('[data-page-index]');
+        const pages = Array.from(raw).filter(p => p.getBoundingClientRect().height > 700);
+        if (pages.length === 0) { onDone(); return; }
+        const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+        for (let i = 0; i < pages.length; i++) {
+          const canvas = await html2canvas(pages[i]!, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", logging: false });
+          if (i > 0) pdf.addPage();
+          pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, 210, 297);
+          canvas.width = 0; canvas.height = 0;
+        }
+        pdf.save(`${(fileName || "").trim() || "resume"}.pdf`);
+      } catch (e) { console.error("PDF failed", e); }
+      onDone();
+    };
+    generate();
+  }, []);
+
+  return (
+    <div ref={containerRef} style={{ position: "absolute", left: "-9999px", top: 0, width: "210mm" }}>
+      <ResumePreview resume={resume} sectionOrder={sectionOrder} />
+    </div>
+  );
 }
 
 export default function Dashboard() {
@@ -30,6 +70,8 @@ export default function Dashboard() {
   const [renameValue, setRenameValue] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [downloadId, setDownloadId] = useState<string | null>(null);
+  const [downloadData, setDownloadData] = useState<{ resume: any; sectionOrder: string[]; name: string } | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
@@ -97,6 +139,17 @@ export default function Dashboard() {
     await storage.deleteProject(id);
     setProjects(prev => prev.filter(p => p.id !== id));
     setDeleteId(null);
+  }
+
+  async function handleDownload(meta: ProjectMeta) {
+    setDownloadId(meta.id);
+    const storage = getStorageAdapter();
+    const data = await storage.loadProject(meta.id);
+    if (data) {
+      setDownloadData({ resume: data.resume, sectionOrder: data.sectionOrder || [], name: meta.name });
+    } else {
+      setDownloadId(null);
+    }
   }
 
   function startRename(meta: ProjectMeta) {
@@ -351,6 +404,10 @@ export default function Dashboard() {
                       className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                       {renameId === meta.id ? <Check className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
                     </button>
+                    <button onClick={e => { e.stopPropagation(); handleDownload(meta); }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
                     <button onClick={e => { e.stopPropagation(); setDeleteId(meta.id); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
@@ -372,7 +429,15 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Ripple overlay */}
+      {/* Download renderer: renders hidden preview, generates PDF, then cleans up */}
+      {downloadData && (
+        <DashboardDownloader
+          resume={downloadData.resume}
+          sectionOrder={downloadData.sectionOrder}
+          fileName={downloadData.name}
+          onDone={() => { setDownloadData(null); setDownloadId(null); }}
+        />
+      )}
       {ripple && (
         <div className="fixed z-[9998] pointer-events-none" style={{
           left: ripple.x, top: ripple.y, width: ripple.expanding ? "200vmax" : "1px", height: ripple.expanding ? "200vmax" : "1px",
